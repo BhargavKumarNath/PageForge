@@ -55,6 +55,8 @@ def _parse_args():
                    help="Directory for JSON output")
     p.add_argument("--fast", action="store_true",
                    help="Fast mode: 8 gens, pop=20, n_steps=50 (~90s)")
+    p.add_argument("--device", type=str, default="cpu",
+                   help="PyTorch device (cpu/cuda); default cpu")
     return p.parse_args()
 
 
@@ -85,7 +87,7 @@ def run_evolution(args) -> dict:
         n_steps    = args.n_steps,
         batch_size = 64,
         seed       = args.seed,
-        device     = "cpu",
+        device     = args.device,
     )
     bridge = RustEvolutionBridge(
         eval_callback   = ev.evaluate,
@@ -259,7 +261,7 @@ def run_ablation(args) -> dict:
         n_steps    = args.n_steps,
         batch_size = 64,
         seed       = args.seed,
-        device     = "cpu",
+        device     = args.device,
     )
     console.print(
         f"  [dim]3 configs × {args.ablation_gens} generations × "

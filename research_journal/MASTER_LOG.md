@@ -2,7 +2,7 @@
 
 **Project**: Gradient-Health-Aware Symbolic Schedule Discovery
 **Started**: 2026-05-28
-**Status**: Phase 6 — Complete (main engine done)
+**Status**: Real-World Testing — In Progress
 
 ---
 
@@ -183,6 +183,74 @@ Rust GP engine (ask)
     → Rust archive (tell, gradient-sensitivity niches)
         → BenchmarkSuite (statistical comparison vs 7 baselines)
 ```
+
+---
+
+---
+
+## Real-World Testing Summary (2026-06-01)
+
+### Step 1: End-to-End Engine Validation (no downloads)
+
+**Script**: `experiments/step1_end_to_end_validation.py`
+**Result**: ALL CHECKS PASSED
+
+Key findings:
+- Gradient sensitivity rose from 0.204 → 0.414 over 20 generations: signal path confirmed
+- Archive top formulas contained `g` and `dl` tokens: GP explores gradient-conditional space
+- Best discovered formula: `exp((1.83 - ||g||) / cos(2.83 / dl))`
+  — reduces LR when gradient spikes; modulates by loss slope
+- Ablation: `t_g_dl` archive grad-sensitivity (0.376) >> `t_only` (0.000): filter works
+- BenchmarkSuite correctly noted it evaluates at `g=0`, penalising gradient-aware formulas
+
+**Conclusion**: Engine works end-to-end mechanically. Proxy task too easy for meaningful
+fitness ranking (flat landscape — any non-zero LR converges). The gradient signal flows;
+the problem is that the proxy doesn't reward adaptive vs non-adaptive formulas differently.
+
+---
+
+### Step 2: MNIST Transfer Test
+
+**Script**: `experiments/step2_mnist_transfer.py`
+**Formula**: `exp((1.83 - ||g||) / cos(2.83 / dl))`
+**Device**: RTX 4070 Laptop, AMP enabled
+
+**v1 (no gradient clipping)**: formula diverged in 2/3 seeds (NaN from step 1 of ep 1).
+Root cause: formula produces LR ≈ 8-10 when `cos(2.83/dl_norm) ≈ 0`, causing SGD to explode.
+
+**v2 (gradient clipping max_norm=1.0, LR cap [0.05×0.001, 0.05×5])**: no divergence.
+
+| Rank | Candidate | Test Acc | ± | LR-std |
+|------|-----------|----------|---|--------|
+| #1 | 1-Cycle | **99.28%** | 0.02% | 0.00033 |
+| #2 | Cosine Annealing | 99.26% | 0.08% | 0.00016 |
+| #3 | Step Decay | 99.21% | 0.07% | 0.00000 |
+| #4 | Constant LR | 98.90% | 0.08% | 0.00000 |
+| **#5** | **SymboLR** | **98.59%** | **0.25%** | **0.00000** |
+
+**Key finding**: SymboLR `LR-std = 0.00000` — formula saturated at the LR cap (0.25)
+every step across all seeds. The formula's natural output on MNIST is LR ≈ 8-10 (the
+proxy task rewarded fast convergence via high LR, not gradient-adaptive behavior).
+The formula effectively ran as constant LR=0.25, ranking last.
+
+**Root cause — proxy task design flaw**:
+The Gaussian cluster proxy task is too easy. Any LR in [0.01, 10.0] converges quickly,
+making the fitness landscape flat with respect to LR schedule shape. The GP selected
+formulas that maximize convergence speed (high LR), not gradient health awareness.
+
+**Fixes identified**:
+1. Add instability penalty: if loss exceeds initial CE (2.3) post-warmup, penalise heavily
+2. Harder clusters: reduce separation (center scale 1.0, noise 1.5)
+3. Or use MNIST subset directly as proxy (eliminates proxy-transfer gap)
+
+**Bugs found and fixed during testing**:
+- NormStats corruption: `math.log(inf)` when gradient norm overflows warmup → guard added
+- Slow baselines: `scaler.unscale_()` called every step for all candidates → now only
+  for formula candidate (reduces baseline step time ~6x)
+- LR fallback too aggressive (`base_lr * 1e-3`) → changed to `base_lr * 0.1`
+
+**Full results**: `research_journal/experiments/step2_mnist_20260601_161138.json`
+**Analysis**: `research_journal/experiments/real_world_test_001.md`
 
 ---
 

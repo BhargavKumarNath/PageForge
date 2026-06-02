@@ -161,7 +161,10 @@ def test_evaluate_returns_correct_length(small_evaluator):
 @pytest.mark.skipif(not TORCH_AVAILABLE, reason="torch not installed")
 def test_evaluate_finite_for_valid_formulas(small_evaluator):
     """All standard time-only formulas return finite fitness scores."""
-    formulas = ["0.01", "* 0.05 t", "cos * 3.14159 t", "+ 0.001 * 0.01 t"]
+    # NOTE: formulas must produce LR << 1.0 throughout training.
+    # Unscaled cos/exp (LR = 1.0 at t=0) diverge on the MNIST proxy — that is
+    # intentional: the proxy now correctly penalises out-of-range schedules.
+    formulas = ["0.01", "* 0.05 t", "* 0.05 cos * 3.14159 t", "+ 0.001 * 0.01 t"]
     results  = small_evaluator.evaluate(formulas)
     for fstr, fitness in zip(formulas, results):
         assert math.isfinite(fitness), f"Formula '{fstr}' returned non-finite fitness: {fitness}"
@@ -186,7 +189,7 @@ def test_evaluate_empty_batch(small_evaluator):
 @pytest.mark.skipif(not TORCH_AVAILABLE, reason="torch not installed")
 def test_evaluate_deterministic(small_evaluator):
     """Same formulas evaluated twice must produce identical fitness scores."""
-    formulas = ["0.01", "* 0.05 t", "cos * 3.14159 t"]
+    formulas = ["0.01", "* 0.05 t", "* 0.05 cos * 3.14159 t"]
     a = small_evaluator.evaluate(formulas)
     b = small_evaluator.evaluate(formulas)
     for fa, fb, fstr in zip(a, b, formulas):
@@ -287,8 +290,8 @@ def test_throughput_cpu():
     ev = GradientAwareEvaluator(
         n_steps=40, batch_size=64, seed=99, device="cpu",
     )
-    formulas = ["0.01", "* 0.05 t", "cos * 3.14159 t", "* 0.01 exp * -1 g",
-                "* 0.05 + 1 dl", "0.005", "* 0.1 t", "exp * -0.5 t",
+    formulas = ["0.01", "* 0.05 t", "* 0.05 cos * 3.14159 t", "* 0.01 exp * -1 g",
+                "* 0.05 + 1 dl", "0.005", "* 0.1 t", "* 0.05 exp * -0.5 t",
                 "* 0.02 cos t", "0.03"]
 
     t0         = time.perf_counter()

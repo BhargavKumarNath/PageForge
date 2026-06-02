@@ -22,6 +22,7 @@ import logging
 import math
 import time
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Optional
 
 import numpy as np
@@ -39,12 +40,15 @@ try:
 except ImportError:
     TORCH_AVAILABLE = False
 
-# Proxy task constants 
+# Proxy task constants
 
-PROXY_INPUT_DIM  = 64    # Feature dimension (synthetic Gaussian clusters)
-PROXY_HIDDEN_DIM = 128   # MLP hidden layer
+PROXY_INPUT_DIM  = 784   # MNIST 28×28 flattened
+PROXY_HIDDEN_DIM = 256   # MLP hidden layer (wider for MNIST complexity)
 PROXY_N_CLASSES  = 10    # Number of classification targets
-PROXY_N_SAMPLES  = 2000  # Total samples in the proxy dataset
+PROXY_N_SAMPLES  = 2000  # Total samples drawn from MNIST training split
+
+# MNIST root: navigate from src/symbolr/evaluators/ up to project root then data/
+_MNIST_ROOT = Path(__file__).resolve().parents[3] / "data"
 
 
 # Input normalization
@@ -95,36 +99,52 @@ class _NormStats:
 
 def _build_proxy_dataset(seed: int, device) -> tuple:
     """
-    Synthetic N-class Gaussian-cluster classification dataset.
+    2000-sample MNIST subset used as the proxy classification task.
 
-    No download required. The clusters are well-separated enough that
-    gradient norms and loss slopes carry real information about optimization
-    progress, but the task is not trivially solvable in one step.
+    Replacing the previous Gaussian-cluster proxy with real MNIST images
+    ensures three properties the synthetic proxy lacked:
 
-    Returns: (X_train, y_train, X_val, y_val) as float32/int64 torch tensors.
+    1. Gradient statistics during proxy evaluation match those seen during
+       full MNIST training, so NormStats calibration transfers correctly.
+    2. The fitness landscape penalises out-of-range learning rates: LR >> 1
+       diverges; LR << 0.01 converges too slowly within the step budget.
+    3. Adaptive schedules that decay or respond to gradient health earn a
+       lower validation loss than a constant high-LR formula, because the
+       task is hard enough that LR shape actually matters.
+
+    Returns: (X_train, y_train, X_val, y_val) as float32 / int64 tensors.
     """
+    try:
+        from torchvision import datasets, transforms
+    except ImportError:
+        raise RuntimeError(
+            "GradientAwareEvaluator requires torchvision for the MNIST proxy. "
+            "Install with: pip install torchvision"
+        )
+
     rng = np.random.RandomState(seed)
-    n_per_class = PROXY_N_SAMPLES // PROXY_N_CLASSES
 
-    X_parts, y_parts = [], []
-    for cls_id in range(PROXY_N_CLASSES):
-        center = rng.randn(PROXY_INPUT_DIM) * 3.0
-        X_cls  = center + rng.randn(n_per_class, PROXY_INPUT_DIM) * 0.8
-        X_parts.append(X_cls.astype(np.float32))
-        y_parts.append(np.full(n_per_class, cls_id, dtype=np.int64))
+    transform = transforms.Compose([
+        transforms.ToTensor(),
+        transforms.Normalize((0.1307,), (0.3081,)),  # MNIST channel mean / std
+    ])
 
-    X = np.vstack(X_parts)
-    y = np.concatenate(y_parts)
-    perm = rng.permutation(len(X))
-    X, y = X[perm], y[perm]
-
-    n_val = len(X) // 5  # 20% validation
-    return (
-        torch.from_numpy(X[n_val:]).to(device),
-        torch.from_numpy(y[n_val:]).to(device),
-        torch.from_numpy(X[:n_val]).to(device),
-        torch.from_numpy(y[:n_val]).to(device),
+    mnist = datasets.MNIST(
+        root=str(_MNIST_ROOT), train=True, download=True, transform=transform
     )
+
+    # Reproducible random subset of PROXY_N_SAMPLES from 60 K training images
+    indices = rng.choice(len(mnist), size=PROXY_N_SAMPLES, replace=False).tolist()
+    subset  = torch.utils.data.Subset(mnist, indices)
+    loader  = torch.utils.data.DataLoader(
+        subset, batch_size=PROXY_N_SAMPLES, shuffle=False, num_workers=0
+    )
+    X_raw, y_raw = next(iter(loader))
+    X = X_raw.view(PROXY_N_SAMPLES, -1).to(device)        # (2000, 784)
+    y = y_raw.to(device)                                    # (2000,)
+
+    n_val = PROXY_N_SAMPLES // 5                            # 400 val, 1600 train
+    return X[n_val:], y[n_val:], X[:n_val], y[:n_val]
 
 
 class _ProxyMLP(nn.Module):
@@ -347,6 +367,7 @@ class GradientAwareEvaluator(BaseEvaluator):
         halving_fraction: float = 0.50,
         seed: int = 42,
         device: Optional[str] = None,
+        instability_factor: float = 2.0,
     ) -> None:
         if not TORCH_AVAILABLE:
             raise RuntimeError(
@@ -354,12 +375,13 @@ class GradientAwareEvaluator(BaseEvaluator):
                 "Install it with: pip install torch"
             )
 
-        self.n_steps          = n_steps
-        self.batch_size       = batch_size
-        self.base_lr          = base_lr
-        self.warmup_fraction  = warmup_fraction
-        self.halving_fraction = halving_fraction
-        self.seed             = seed
+        self.n_steps            = n_steps
+        self.batch_size         = batch_size
+        self.base_lr            = base_lr
+        self.warmup_fraction    = warmup_fraction
+        self.halving_fraction   = halving_fraction
+        self.seed               = seed
+        self.instability_factor = instability_factor
 
         self._device = (
             torch.device(device)
@@ -444,6 +466,17 @@ class GradientAwareEvaluator(BaseEvaluator):
             norm_stats.dl_mean, norm_stats.dl_std,
         )
 
+        # Instability tracking: penalise formulas whose post-warmup training
+        # loss exceeds instability_factor × the theoretical random-init CE.
+        # Anchoring to initial_ce (not warmup_end_loss) makes the threshold
+        # independent of warmup length — short warmups leave loss near
+        # random-init CE, so a warmup-based threshold would be too tight.
+        # A formula whose training loss rises above 2× random-init CE is
+        # actively making the model worse and should receive fitness = inf.
+        _initial_ce = math.log(PROXY_N_CLASSES)          # ≈ 2.303 for 10 classes
+        _stab_threshold = np.full(N, _initial_ce * self.instability_factor)
+        _diverged = ~np.isfinite(prev_losses)            # already diverged in warmup
+
         # Phase 1
         global_step = warmup_steps
 
@@ -454,6 +487,7 @@ class GradientAwareEvaluator(BaseEvaluator):
             lrs    = self._compute_lrs(formulas, t_norm, g_norms, losses, prev_losses, norm_stats)
             state  = trainer.apply_lrs(state, grads, lrs)
             prev_losses = np.where(np.isfinite(losses), losses, prev_losses)
+            _diverged |= ~np.isfinite(losses) | (losses > _stab_threshold)
 
         global_step += phase1_steps
         phase1_val = trainer.validate(state, self._X_val, self._y_val)
@@ -475,10 +509,22 @@ class GradientAwareEvaluator(BaseEvaluator):
                         lrs[i] = 0.0
                 state = trainer.apply_lrs(state, grads, lrs)
                 prev_losses = np.where(np.isfinite(losses), losses, prev_losses)
+                _diverged |= ~np.isfinite(losses) | (losses > _stab_threshold)
 
             final_val = trainer.validate(state, self._X_val, self._y_val)
         else:
             final_val = phase1_val
+
+        # Apply instability penalty: override fitness for any formula whose
+        # training loss spiked above the stability threshold post-warmup.
+        if _diverged.any():
+            final_val = final_val.copy()
+            final_val[_diverged] = float("inf")
+            logger.info(
+                "Instability penalty applied to %d/%d formulas "
+                "(training loss exceeded %.2f× warmup baseline)",
+                int(_diverged.sum()), N, self.instability_factor,
+            )
 
         elapsed    = time.time() - t0
         throughput = N / elapsed
