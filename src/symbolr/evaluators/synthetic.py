@@ -5,12 +5,9 @@ Simulates training on a noisy quadratic loss landscape using seeded RNGs,
 making evaluation fully deterministic without requiring PyTorch or a GPU.
 """
 from __future__ import annotations
-
 import hashlib
-
 import numpy as np
 import symbolr_rust
-
 from src.symbolr.core.evaluator import BaseEvaluator
 from src.symbolr.config import get_config
 

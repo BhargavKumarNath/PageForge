@@ -175,7 +175,6 @@ def _vmap_available() -> bool:
 
 
 # Batched trainer: vmap backend
-
 class _VmapBatchedTrainer:
     """
     Trains N models in parallel using torch.func.vmap (PyTorch >= 2.0).
@@ -266,7 +265,6 @@ class _VmapBatchedTrainer:
 
 
 # Batched trainer: sequential fallback
-
 class _SequentialTrainer:
     """
     Trains N models in a Python for-loop. Used when torch.func is unavailable.
@@ -337,7 +335,6 @@ class _SequentialTrainer:
 
 
 # Main evaluator
-
 class GradientAwareEvaluator(BaseEvaluator):
     """
     Evaluates formulas by training models with them on a proxy classification task.
@@ -411,7 +408,6 @@ class GradientAwareEvaluator(BaseEvaluator):
         return f"GradientAwareEvaluator(device={self._device}, n_steps={self.n_steps})"
 
     # Public API
-
     def evaluate(self, formulas: list[str]) -> list[float]:
         """
         Evaluate a batch of formulas by training N independent models.

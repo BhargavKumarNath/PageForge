@@ -33,8 +33,7 @@ from src.symbolr.baselines.benchmark import BenchmarkSuite
 logger = logging.getLogger(__name__)
 
 
-# ── Canonical terminal-set configurations ────────────────────────────────────
-
+# Canonical terminal-set configurations
 @dataclass(frozen=True)
 class AblationConfig:
     """One terminal-set configuration for the ablation study."""
@@ -62,8 +61,7 @@ ABLATION_CONFIGS: list[AblationConfig] = [
 ]
 
 
-# ── Per-run result ────────────────────────────────────────────────────────────
-
+# Per-run result
 @dataclass
 class AblationRun:
     """Results of a single ablation configuration run."""
@@ -96,8 +94,7 @@ class AblationRun:
         }
 
 
-# ── Full ablation result ──────────────────────────────────────────────────────
-
+# Full ablation result
 @dataclass
 class AblationResult:
     """Results of all three terminal-set configurations."""
@@ -138,8 +135,7 @@ class AblationResult:
         logger.info("Ablation results saved to %s", path)
 
 
-# ── AblationRunner ────────────────────────────────────────────────────────────
-
+# AblationRunner
 class AblationRunner:
     """
     Runs the three-way terminal-set ablation study.
@@ -180,8 +176,7 @@ class AblationRunner:
         self.benchmark_steps = benchmark_steps
         self.run_benchmark   = run_benchmark
 
-    # ── Public API ────────────────────────────────────────────────────────────
-
+    # Public API
     def run_single(self, config: AblationConfig) -> AblationRun:
         """
         Run one ablation configuration end-to-end.
@@ -224,10 +219,6 @@ class AblationRunner:
                 "top_formula_latex": result.top_formula_latex,
                 "ms":                result.gen_time_ms,
             })
-            # Track the overall best formula seen across all generations.
-            # NOTE: do NOT call bridge.hall_of_fame() or bridge.archive_stats()
-            # after streaming — the Rust engine finalizes at max_generations and
-            # those methods return empty/zero after the stream is exhausted.
             if result.best_mse < _best_fitness:
                 _best_fitness = result.best_mse
                 _best_prefix  = result.top_formula_prefix

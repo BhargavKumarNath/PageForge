@@ -6,7 +6,6 @@ All exporters (PyTorch, LaTeX) and evaluators derive from this module.
 Supports variables: t (normalized time), g (gradient norm), dl (loss slope).
 """
 from __future__ import annotations
-
 import math
 from typing import Any
 

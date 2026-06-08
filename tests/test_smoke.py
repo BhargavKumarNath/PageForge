@@ -8,7 +8,6 @@ when symbolr_rust is not available.
 import importlib.util
 import json
 import math
-
 import numpy as np
 import pytest
 

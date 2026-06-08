@@ -3,7 +3,6 @@ import torch
 import numpy as np
 from src.symbolr.core.evaluator import BaseEvaluator
 
-
 class CUDABatchEvaluator(BaseEvaluator):
     """
     Evaluates prefix formulas against a surrogate dataset using GPU tensor ops.

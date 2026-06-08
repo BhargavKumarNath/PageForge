@@ -1,6 +1,5 @@
 """Export a prefix formula to a plug-and-play PyTorch LambdaLR scheduler."""
 from __future__ import annotations
-
 from src.symbolr.artifacts.prefix_parser import parse_prefix
 
 

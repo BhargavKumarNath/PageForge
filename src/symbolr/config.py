@@ -7,7 +7,6 @@ If you change a value here, verify it matches the corresponding Rust constant:
   - size_bins, com_bins, smoothness_bins → rust_core/src/archive.rs
 """
 from __future__ import annotations
-
 from dataclasses import dataclass, field
 from typing import Any, Optional
 

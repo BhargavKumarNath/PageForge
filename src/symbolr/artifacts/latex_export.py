@@ -1,8 +1,6 @@
 """Export a prefix formula to LaTeX notation."""
 from __future__ import annotations
-
 from src.symbolr.artifacts.prefix_parser import parse_prefix
-
 
 def _node_to_latex(node: tuple) -> str:
     kind = node[0]

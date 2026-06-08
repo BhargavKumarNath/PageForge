@@ -22,7 +22,6 @@ import symbolr_rust
 
 
 # 1. New Variable Tokens in Prefix Strings
-
 def test_ask_generates_gradient_tokens():
     """
     ask() must generate formulas containing 'g' and 'dl' tokens.
@@ -78,7 +77,6 @@ def test_evaluate_batch_gradient_formula():
 
 
 # 2. Behavioral Axes — Gradient Sensitivity
-
 def test_gradient_sensitivity_rises_as_archive_fills():
     """
     gradient_sensitivity_mean in telemetry must be >= 0.0 at all times
@@ -149,7 +147,6 @@ def test_tell_json_includes_gradient_sensitivity_mean():
 
 
 # 3. Backward Compatibility — SyntheticEvaluator unaffected
-
 def test_synthetic_evaluator_still_deterministic():
     """SyntheticEvaluator must remain deterministic after Phase 2 Rust changes."""
     from src.symbolr.evaluators.synthetic import SyntheticEvaluator
