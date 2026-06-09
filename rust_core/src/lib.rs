@@ -373,7 +373,7 @@ mod ffi_tests {
         // Initialize the Python interpreter for testing outside of a module context
         pyo3::prepare_freethreaded_python();
 
-        Python::with_gil(|py| {
+        Python::with_gil(|_py| {
             // 1. Test: Engine Init
             let max_generations = 3;
             let mut engine = EvolutionEngine::new(

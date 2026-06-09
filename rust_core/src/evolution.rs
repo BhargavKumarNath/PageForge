@@ -29,7 +29,7 @@
 
 use crate::archive::{ArchiveConfig, MapElitesArchive};
 use crate::ast::Expr;
-use crate::operators::{apply_random_operator, ramped_half_and_half};
+use crate::operators::apply_random_operator;
 use serde::{Serialize, Deserialize};
 
 use rand::Rng;
