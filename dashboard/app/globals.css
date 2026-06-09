@@ -1,0 +1,81 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── CSS custom properties ─────────────────────────────────────── */
+:root {
+  --emerald:   #34d399;
+  --rose:      #fb7185;
+  --sky:       #38bdf8;
+  --amber:     #fbbf24;
+  --violet:    #a78bfa;
+  --glass-bg:  rgba(255, 255, 255, 0.03);
+  --glass-bd:  rgba(255, 255, 255, 0.07);
+  --glass-bd-hi: rgba(255, 255, 255, 0.12);
+}
+
+/* ── Base ───────────────────────────────────────────────────────── */
+* { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background-color: #09090b;
+  background-image:
+    radial-gradient(ellipse 90% 60% at 5%   0%,  rgba(16, 185, 129, 0.04) 0%, transparent 55%),
+    radial-gradient(ellipse 60% 40% at 95%  5%,  rgba(56, 189, 248, 0.03) 0%, transparent 55%),
+    radial-gradient(ellipse 40% 30% at 50% 100%, rgba(167, 139, 250, 0.02) 0%, transparent 50%);
+  color: #f4f4f5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ── Utility classes ───────────────────────────────────────────── */
+@layer components {
+  .glass-card {
+    background: var(--glass-bg);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--glass-bd);
+    border-radius: 16px;
+  }
+
+  .glass-card-hi {
+    background: rgba(255, 255, 255, 0.04);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--glass-bd-hi);
+    border-radius: 16px;
+  }
+
+  .label-tag {
+    @apply text-[10px] uppercase tracking-widest font-medium text-zinc-500;
+    letter-spacing: 0.12em;
+  }
+
+  .section-title {
+    @apply text-base font-semibold text-zinc-100 leading-snug;
+  }
+
+  .section-sub {
+    @apply text-xs text-zinc-500 leading-relaxed;
+  }
+
+  /* Recharts global overrides */
+  .recharts-cartesian-axis-tick-value {
+    fill: #71717a !important;
+    font-size: 11px !important;
+  }
+  .recharts-legend-item-text {
+    color: #a1a1aa !important;
+    font-size: 12px !important;
+  }
+  .recharts-tooltip-wrapper {
+    outline: none !important;
+  }
+}
+
+/* ── Scrollbar ─────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
