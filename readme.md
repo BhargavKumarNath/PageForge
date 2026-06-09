@@ -10,6 +10,7 @@
 ![KV Cache](https://img.shields.io/badge/KV--Cache-paged%20attention-orange?style=for-the-badge)
 ![Transformers](https://img.shields.io/badge/Transformers-FFCC00?style=for-the-badge&logo=huggingface&logoColor=black)
 
+**[→ View Live Dashboard](https://page-forge-five.vercel.app/)**
 
 **Paged KV-cache memory manager for LLM inference — Rust + CUDA + Python.**
 
