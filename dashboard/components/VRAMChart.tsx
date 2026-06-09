@@ -17,7 +17,7 @@ interface TooltipPayload {
 function CustomTooltip({ active, payload, label }: TooltipPayload) {
   if (!active || !payload?.length) return null;
   const d = payload[0]?.payload ?? {};
-  const savings = d.naiveMB && d.pagedMB ? (d.naiveMB / d.pagedMB).toFixed(1) : "—";
+  const savings = d.naiveMB && d.pagedMB ? (d.naiveMB / d.pagedMB).toFixed(1) : "-";
   return (
     <div className="glass-card-hi px-4 py-3 text-xs space-y-1.5 min-w-[160px]">
       <p className="text-zinc-400 font-medium mb-2">Decode step {label}</p>

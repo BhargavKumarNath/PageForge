@@ -47,7 +47,7 @@ const EXPLAINER = [
     statColor: "text-rose-400",
     heading:   "Naive pre-allocation wastes 90%+ of VRAM",
     body:
-      "Traditional KV caches reserve max_seq_len (512) tokens of memory at sequence start — regardless of how many tokens are actually generated. " +
+      "Traditional KV caches reserve max_seq_len (512) tokens of memory at sequence start, regardless of how many tokens are actually generated. " +
       "For GPT-2, that's 18.9 MB per sequence, all committed upfront. A 512-page pool can serve just 16 sequences simultaneously.",
     stat:    "16 seqs max",
     statSub: "512-page pool · naive pre-alloc",
@@ -61,7 +61,7 @@ const EXPLAINER = [
     heading:   "On-demand paged allocation",
     body:
       "PageForge allocates memory in fixed-size pages (16 tokens = 0.59 MB) on each decode step. " +
-      "A Rust PageAllocator manages an O(1) VecDeque free-list. Sequences claim pages as they grow and return them immediately when complete — " +
+      "A Rust PageAllocator manages an O(1) VecDeque free-list. Sequences claim pages as they grow and return them immediately when complete, " +
       "enabling the same pool to serve many more sequences concurrently.",
     stat:    "0.59 MB / page",
     statSub: "16 tokens · allocated on demand",
@@ -74,7 +74,7 @@ const EXPLAINER = [
     statColor: "text-emerald-400",
     heading:   "8–32× more concurrent sequences",
     body:
-      "At decode step 10 (20 tokens), each sequence uses just 2 pages vs 32 pre-allocated — freeing 94% of the pool for other sequences. " +
+      "At decode step 10 (20 tokens), each sequence uses just 2 pages vs 32 pre-allocated, freeing 94% of the pool for other sequences. " +
       "The same 512-page budget that handles 16 naive sequences can now serve 128–512 concurrent sequences, " +
       "depending on how far along each sequence is.",
     stat:    "128–512 seqs",
@@ -214,7 +214,7 @@ export default function Page() {
               title="Decode Latency"
               baseLabel="HF DynamicCache"
               rows={latencyCompRows}
-              note="HF DynamicCache grows KV tensors by torch.cat each step (contiguous layout). PageForge scatter-copies into non-contiguous pages — additional overhead per step."
+              note="HF DynamicCache grows KV tensors by torch.cat each step (contiguous layout). PageForge scatter-copies into non-contiguous pages, adding overhead per step."
             />
           </div>
         </section>
@@ -317,7 +317,7 @@ export default function Page() {
           </div>
           <p className="text-[11px] text-zinc-600 mt-4 leading-relaxed">
             Inspired by vLLM PagedAttention (Kwon et al., 2023). This implementation demonstrates the
-            core paging mechanism from first principles — Rust allocator, hand-written CUDA scatter/gather
+            core paging mechanism from first principles: Rust allocator, hand-written CUDA scatter/gather
             kernels, and a DLPack zero-copy bridge to PyTorch.
           </p>
         </section>
@@ -335,7 +335,7 @@ export default function Page() {
             <span className="text-xs text-zinc-600">Hardware-verified benchmarks · GPT-2 124M fp16</span>
           </div>
           <a
-            href="https://github.com"
+            href="https://github.com/BhargavKumarNath/PageForge"
             target="_blank"
             rel="noreferrer"
             className="text-xs text-zinc-500 hover:text-zinc-300 transition-colors shrink-0"

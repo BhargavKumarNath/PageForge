@@ -9,9 +9,10 @@
   --sky:       #38bdf8;
   --amber:     #fbbf24;
   --violet:    #a78bfa;
-  --glass-bg:  rgba(255, 255, 255, 0.03);
-  --glass-bd:  rgba(255, 255, 255, 0.07);
-  --glass-bd-hi: rgba(255, 255, 255, 0.12);
+  /* glass — slight lavender tint in bg + border so cards feel lit by the ambient glow */
+  --glass-bg:  rgba(139, 92, 246, 0.04);
+  --glass-bd:  rgba(167, 139, 250, 0.10);
+  --glass-bd-hi: rgba(196, 181, 253, 0.18);
 }
 
 /* ── Base ───────────────────────────────────────────────────────── */
@@ -22,9 +23,16 @@ html { scroll-behavior: smooth; }
 body {
   background-color: #09090b;
   background-image:
-    radial-gradient(ellipse 90% 60% at 5%   0%,  rgba(16, 185, 129, 0.04) 0%, transparent 55%),
-    radial-gradient(ellipse 60% 40% at 95%  5%,  rgba(56, 189, 248, 0.03) 0%, transparent 55%),
-    radial-gradient(ellipse 40% 30% at 50% 100%, rgba(167, 139, 250, 0.02) 0%, transparent 50%);
+    /* emerald — top-left anchor */
+    radial-gradient(ellipse 90% 60% at 5%   0%,   rgba(16,  185, 129, 0.05) 0%, transparent 55%),
+    /* sky — top-right accent */
+    radial-gradient(ellipse 60% 40% at 95%  5%,   rgba(56,  189, 248, 0.04) 0%, transparent 55%),
+    /* lavender — bottom-left, primary glow */
+    radial-gradient(ellipse 75% 55% at 10% 100%,  rgba(167, 139, 250, 0.08) 0%, transparent 60%),
+    /* lavender — bottom-right, secondary sweep */
+    radial-gradient(ellipse 55% 45% at 90%  95%,  rgba(196, 181, 253, 0.05) 0%, transparent 55%),
+    /* indigo — centre depth, very faint */
+    radial-gradient(ellipse 50% 35% at 50%  60%,  rgba(99,  102, 241, 0.03) 0%, transparent 50%);
   color: #f4f4f5;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;

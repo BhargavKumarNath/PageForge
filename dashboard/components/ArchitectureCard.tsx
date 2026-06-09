@@ -9,7 +9,7 @@ const layers: Layer[] = [
   {
     name:   "Python User Code",
     tech:   "pageforge.cache.PagedKVCache",
-    detail: "DynamicCache subclass — drop-in for HuggingFace transformers",
+    detail: "DynamicCache subclass, drop-in for HuggingFace transformers",
     color:  "#a78bfa",
   },
   {
@@ -21,13 +21,13 @@ const layers: Layer[] = [
   {
     name:   "CUDA Kernels",
     tech:   "CuPy RawKernel (nvrtc)",
-    detail: "gather_kv · scatter_kv_layer — 100–200 GB/s on sm_89",
+    detail: "gather_kv · scatter_kv_layer, 100-200 GB/s on sm_89",
     color:  "#34d399",
   },
   {
     name:   "GPU Pool",
     tech:   "fp16 · CuPy",
-    detail: "(N_pages, page_size, n_layers × n_heads, d_head) — K and V combined",
+    detail: "(N_pages, page_size, n_layers × n_heads, d_head), K and V combined",
     color:  "#38bdf8",
   },
 ];
@@ -94,7 +94,7 @@ export default function ArchitectureCard() {
       <div className="mt-4 px-3 py-2 rounded-lg bg-zinc-900/60 border border-zinc-800/60">
         <p className="text-[10px] text-zinc-500">
           <span className="text-zinc-400 font-medium">DLPack bridge</span>
-          {" "}— zero-copy PyTorch ↔ CuPy tensor interop on each decode step.
+          {" "}zero-copy PyTorch ↔ CuPy tensor interop on each decode step.
           No host round-trips. Verified bit-exact vs HF DynamicCache (max diff = 0.0).
         </p>
       </div>

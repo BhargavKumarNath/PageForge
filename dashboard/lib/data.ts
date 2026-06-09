@@ -230,14 +230,14 @@ export const memoryCompRows: CompRow[] = [
     metric:    "Allocation strategy",
     baseline:  "Static (eager max_len)",
     pageforge: "On-demand (page granularity)",
-    delta:     "—",
+    delta:     "-",
     better:    "neutral",
   },
   {
     metric:    "Memory fragmentation",
     baseline:  "Zero (fixed-size pre-alloc)",
     pageforge: "Zero (pool-managed free-list)",
-    delta:     "—",
+    delta:     "-",
     better:    "neutral",
   },
 ];
@@ -262,7 +262,7 @@ export const latencyCompRows: CompRow[] = [
     metric:    "KV tensor layout",
     baseline:  "Contiguous (torch.cat each step)",
     pageforge: "Non-contiguous (page-indexed)",
-    delta:     "—",
+    delta:     "-",
     better:    "neutral",
   },
   {

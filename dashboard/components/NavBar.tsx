@@ -43,7 +43,7 @@ export default function NavBar() {
         {/* Right — links */}
         <div className="flex items-center gap-4">
           <a
-            href="https://github.com"
+            href="https://github.com/BhargavKumarNath/PageForge"
             target="_blank"
             rel="noreferrer"
             className="flex items-center gap-1.5 text-xs text-zinc-500 hover:text-zinc-200 transition-colors"

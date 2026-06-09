@@ -85,11 +85,11 @@ export default function LifecycleChart({ data, naiveMB, peakVRAM, peakPct }: Pro
       <div className="flex flex-wrap items-center gap-x-5 gap-y-2 mb-4">
         <div className="flex items-center gap-2">
           <div className="w-8 h-0.5 bg-emerald-400" />
-          <span className="text-xs text-zinc-400">Batch 1 — initial allocation</span>
+          <span className="text-xs text-zinc-400">Batch 1: initial allocation</span>
         </div>
         <div className="flex items-center gap-2">
           <div className="w-8 h-0.5 bg-sky-400" />
-          <span className="text-xs text-zinc-400">Batch 2 — same pages reused</span>
+          <span className="text-xs text-zinc-400">Batch 2: same pages reused</span>
         </div>
         <div className="flex items-center gap-2">
           <div className="w-2 h-2 rounded-full bg-amber-400/60" />
@@ -173,7 +173,7 @@ export default function LifecycleChart({ data, naiveMB, peakVRAM, peakPct }: Pro
       </ResponsiveContainer>
 
       <p className="text-center text-[11px] text-zinc-600 mt-3">
-        Batch 2 reuses the exact same physical pages freed by Batch 1 — pool never grows, zero fragmentation
+        Batch 2 reuses the exact same physical pages freed by Batch 1. Pool never grows, zero fragmentation.
       </p>
     </div>
   );
