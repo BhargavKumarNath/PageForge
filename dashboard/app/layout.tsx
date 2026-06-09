@@ -23,11 +23,13 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
+  const isProduction = process.env.NODE_ENV === "production";
+
   return (
     <html lang="en" className={inter.variable}>
       <body>
         {children}
-        <Analytics />
+        {isProduction && <Analytics />}
       </body>
     </html>
   );
