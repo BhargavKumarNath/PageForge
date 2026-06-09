@@ -96,8 +96,8 @@ export default function LifecycleChart({ data, naiveMB, peakVRAM, peakPct }: Pro
           <span className="text-xs text-zinc-400">free() called</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="w-8 h-0 border-t border-dashed border-rose-400/50" />
-          <span className="text-xs text-zinc-400">100% naive budget (151 MB)</span>
+          <div className="w-8 h-0.5 border-t border-dashed border-rose-400/50" />
+          <span className="text-xs text-zinc-400">Naive budget: {naiveMB} MB (off-scale)</span>
         </div>
       </div>
 
@@ -142,14 +142,6 @@ export default function LifecycleChart({ data, naiveMB, peakVRAM, peakPct }: Pro
             cursor={{ stroke: "rgba(255,255,255,0.07)", strokeWidth: 1 }}
           />
 
-          {/* Naive budget reference — 100% would be 151 MB; show relative */}
-          <ReferenceLine
-            y={100}
-            stroke="rgba(251,113,133,0.25)"
-            strokeDasharray="4 3"
-            label={{ value: "Naive 100%", position: "right", fill: "#fb7185", fontSize: 9, dx: -4 }}
-          />
-
           {/* free() divider at step 30 */}
           <ReferenceLine
             x={30}
@@ -159,15 +151,27 @@ export default function LifecycleChart({ data, naiveMB, peakVRAM, peakPct }: Pro
             label={{ value: "free()", position: "top", fill: "#fbbf24", fontSize: 9, dy: -2 }}
           />
 
-          {/* Single area — stroke changes colour by batch region */}
+          {/* Batch 1 — emerald */}
           <Area
             type="monotone"
-            dataKey="util"
+            dataKey="util1"
             stroke="#34d399"
             strokeWidth={2}
             fill="url(#lcGrad1)"
             dot={false}
             activeDot={{ r: 3, fill: "#34d399", strokeWidth: 0 }}
+            connectNulls={false}
+          />
+          {/* Batch 2 — sky */}
+          <Area
+            type="monotone"
+            dataKey="util2"
+            stroke="#38bdf8"
+            strokeWidth={2}
+            fill="url(#lcGrad2)"
+            dot={false}
+            activeDot={{ r: 3, fill: "#38bdf8", strokeWidth: 0 }}
+            connectNulls={false}
           />
         </AreaChart>
       </ResponsiveContainer>

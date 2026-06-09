@@ -22,17 +22,19 @@ html { scroll-behavior: smooth; }
 
 body {
   background-color: #09090b;
+  /* fixed: positions are viewport-relative so gradients stay visible on long pages */
+  background-attachment: fixed;
   background-image:
-    /* emerald — top-left anchor */
-    radial-gradient(ellipse 90% 60% at 5%   0%,   rgba(16,  185, 129, 0.05) 0%, transparent 55%),
+    /* lavender — upper-left, primary ambient glow */
+    radial-gradient(ellipse 80% 55% at 10%  15%,  rgba(167, 139, 250, 0.20) 0%, transparent 65%),
+    /* emerald — left edge, mid-height */
+    radial-gradient(ellipse 65% 50% at 0%   60%,  rgba(16,  185, 129, 0.12) 0%, transparent 55%),
     /* sky — top-right accent */
-    radial-gradient(ellipse 60% 40% at 95%  5%,   rgba(56,  189, 248, 0.04) 0%, transparent 55%),
-    /* lavender — bottom-left, primary glow */
-    radial-gradient(ellipse 75% 55% at 10% 100%,  rgba(167, 139, 250, 0.08) 0%, transparent 60%),
-    /* lavender — bottom-right, secondary sweep */
-    radial-gradient(ellipse 55% 45% at 90%  95%,  rgba(196, 181, 253, 0.05) 0%, transparent 55%),
-    /* indigo — centre depth, very faint */
-    radial-gradient(ellipse 50% 35% at 50%  60%,  rgba(99,  102, 241, 0.03) 0%, transparent 50%);
+    radial-gradient(ellipse 60% 40% at 92%  8%,   rgba(56,  189, 248, 0.12) 0%, transparent 55%),
+    /* lavender — bottom-right sweep */
+    radial-gradient(ellipse 55% 45% at 88%  88%,  rgba(196, 181, 253, 0.18) 0%, transparent 55%),
+    /* indigo — centre depth */
+    radial-gradient(ellipse 60% 45% at 50%  50%,  rgba(99,  102, 241, 0.08) 0%, transparent 55%);
   color: #f4f4f5;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;

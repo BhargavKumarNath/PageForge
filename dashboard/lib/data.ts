@@ -116,7 +116,9 @@ export const latencyMeta = {
 
 export interface LifecyclePoint {
   step:   number;
-  util:   number;  // pool utilisation %
+  util:   number;        // full series (tooltip source)
+  util1:  number | null; // batch 1 + reset (steps 0–30) — rendered emerald
+  util2:  number | null; // reset + batch 2 (steps 30–60) — rendered sky
   vramMB: number;
   pages:  number;
   batch:  0 | 1 | 2; // 0 = reset event between batches
@@ -127,15 +129,13 @@ const LC_POOL   = 512;
 const LC_PROMPT = 7; // avg prompt length in tokens
 
 function lcPoint(step: number, seqStep: number, batch: 0 | 1 | 2): LifecyclePoint {
-  if (batch === 0) return { step, util: 0, vramMB: 0, pages: 0, batch: 0 };
-  const tokens = LC_PROMPT + seqStep;
-  const pages  = Math.ceil(tokens / PAGE_SIZE) * LC_SEQS;
+  const util   = batch === 0 ? 0 : parseFloat(((Math.ceil((LC_PROMPT + seqStep) / PAGE_SIZE) * LC_SEQS / LC_POOL) * 100).toFixed(1));
+  const pages  = batch === 0 ? 0 : Math.ceil((LC_PROMPT + seqStep) / PAGE_SIZE) * LC_SEQS;
+  const vramMB = batch === 0 ? 0 : parseFloat((pages * MB_PER_PAGE).toFixed(2));
   return {
-    step,
-    util:   parseFloat(((pages / LC_POOL) * 100).toFixed(1)),
-    vramMB: parseFloat((pages * MB_PER_PAGE).toFixed(2)),
-    pages,
-    batch,
+    step, util, vramMB, pages, batch,
+    util1: batch === 2 ? null : util, // batch 1 + reset point
+    util2: batch === 1 ? null : util, // reset point + batch 2
   };
 }
 
