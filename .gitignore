@@ -50,6 +50,9 @@ htmlcov/
 /fonts/
 /symbolr.egg-info/
 
-.claude/
-research_journal/
-.gitignore
+# .claude/
+# research_journal/
+# .gitignore
+linkedin_post.md
+FORENSIC_ANALYSIS.md
+vLLM_paper.pdf

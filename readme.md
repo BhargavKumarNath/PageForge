@@ -148,15 +148,15 @@ impl BlockTable {
 
 In a 512-page pool (~302 MB reserved K+V): supports 256 concurrent sequences at step 10, 128 at step 50, 73 at step 100.
 
-### Decode Latency (single sequence, step 34, 50 iterations, 5 warmup)
+### Decode Latency (single sequence, 50 iterations, 5 warmup)
 
 | Cache | P50 | P99 |
 |-------|-----|-----|
-| HF DynamicCache | 6.26 ms | 19.55 ms |
-| PageForge paged | 8.40 ms | 11.41 ms |
-| **Overhead** | **+34%** | **-42% P99** |
+| HF DynamicCache | 7.5 ms | 10.3 ms |
+| PageForge paged | 10.0 ms | 11.9 ms |
+| **Overhead** | **+33%** | **+16% P99** |
 
-P50 overhead comes from 24 scatter kernel dispatches + 24 `torch.cat` ops (one per layer). P99 improves because paged allocation avoids the large unpredictable allocation spikes in DynamicCache. A fused scatter-attention kernel would halve the P50 overhead.
+P50 overhead comes from 24 Python scatter kernel dispatches per decode step (1 scatter per layer × 12 layers × K+V). Root cause: non-contiguous page layout requires 24 `scatter_kv_layer` calls + 24 `torch.cat` ops. A fused scatter-attention kernel would eliminate these dispatches — target ≤8 ms P50.
 
 ### Kernel Bandwidth
 
@@ -164,7 +164,7 @@ P50 overhead comes from 24 scatter kernel dispatches + 24 `torch.cat` ops (one p
 
 ### Allocator Throughput
 
-**~2M pages/sec** (stress-tested: alloc + free cycles across 8 sequences × 100 iterations).
+**1.5M pages/sec** (stress-tested: 500 alloc + free cycles, 16 sequences/cycle, 0 leaks, 0 OOM errors).
 
 ---
 

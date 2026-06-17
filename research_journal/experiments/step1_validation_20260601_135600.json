@@ -1,0 +1,830 @@
+{
+  "run_timestamp": "20260601_135600",
+  "args": {
+    "generations": 20,
+    "ablation_gens": 10,
+    "pop_size": 40,
+    "n_steps": 100,
+    "benchmark_seeds": 5,
+    "seed": 42,
+    "output_dir": "research_journal/experiments",
+    "fast": false
+  },
+  "total_elapsed": 15.270053148269653,
+  "evolution": {
+    "best_prefix": "exp / - 1.8300538425345128 g cos / / sqrt 0.9748103119764147 sqrt 0.12206300624224875 dl",
+    "best_latex": "e^{\\frac{(1.8300538425345128 - \\|g\\|)}{\\cos(\\frac{\\frac{\\sqrt{0.9748103119764147}}{\\sqrt{0.12206300624224875}}}{\\Delta\\ell})}}",
+    "best_fitness": 0.0,
+    "final_gsm": 0.4142813173284086,
+    "init_gsm": 0.20350877192982456,
+    "gen_log": [
+      {
+        "gen": 1,
+        "best": 4.304250978748314e-06,
+        "avg": 0.014019463992599412,
+        "archive": 15,
+        "grad_sens": 0.20350877192982456,
+        "top_formula": "exp / - 1.8300538425345128 0.689913352468396 sin -0.4757592120684273",
+        "latex": "e^{\\frac{(1.8300538425345128 - 0.689913352468396)}{\\sin(-0.4757592120684273)}}",
+        "ms": 2804
+      },
+      {
+        "gen": 2,
+        "best": 4.071554940310307e-06,
+        "avg": 0.007148675755424368,
+        "archive": 22,
+        "grad_sens": 0.2607655502392344,
+        "top_formula": "exp / - 1.8300538425345128 g sin -0.4757592120684273",
+        "latex": "e^{\\frac{(1.8300538425345128 - \\|g\\|)}{\\sin(-0.4757592120684273)}}",
+        "ms": 199
+      },
+      {
+        "gen": 3,
+        "best": 4.071554940310307e-06,
+        "avg": 0.00919445979021615,
+        "archive": 31,
+        "grad_sens": 0.36332767402376903,
+        "top_formula": "exp / - 1.8300538425345128 g sin -0.4757592120684273",
+        "latex": "e^{\\frac{(1.8300538425345128 - \\|g\\|)}{\\sin(-0.4757592120684273)}}",
+        "ms": 190
+      },
+      {
+        "gen": 4,
+        "best": 3.6000717500428436e-06,
+        "avg": 0.01172259383276355,
+        "archive": 37,
+        "grad_sens": 0.3755334281650071,
+        "top_formula": "exp abs - -0.12061479957203192 + / exp 0.8905036741316832 * 1.835499921090232 t t",
+        "latex": "e^{|(-0.12061479957203192 - (\\frac{e^{0.8905036741316832}}{(1.835499921090232 \\cdot t)} + t))|}",
+        "ms": 220
+      },
+      {
+        "gen": 5,
+        "best": 2.805865278787678e-06,
+        "avg": 0.007111462091313569,
+        "archive": 45,
+        "grad_sens": 0.3941520467836257,
+        "top_formula": "exp / - 1.8300538425345128 g -0.4757592120684273",
+        "latex": "e^{\\frac{(1.8300538425345128 - \\|g\\|)}{-0.4757592120684273}}",
+        "ms": 223
+      },
+      {
+        "gen": 6,
+        "best": 2.5743072455952642e-06,
+        "avg": 0.00659270399364118,
+        "archive": 56,
+        "grad_sens": 0.4229323308270677,
+        "top_formula": "exp / - 1.8300538425345128 sqrt sin 0.5255843339792405 sin -0.4757592120684273",
+        "latex": "e^{\\frac{(1.8300538425345128 - \\sqrt{\\sin(0.5255843339792405)})}{\\sin(-0.4757592120684273)}}",
+        "ms": 196
+      },
+      {
+        "gen": 7,
+        "best": 2.805865278787678e-06,
+        "avg": 0.010447493712422328,
+        "archive": 67,
+        "grad_sens": 0.4061272584446191,
+        "top_formula": "exp / - 1.8300538425345128 g -0.4757592120684273",
+        "latex": "e^{\\frac{(1.8300538425345128 - \\|g\\|)}{-0.4757592120684273}}",
+        "ms": 197
+      },
+      {
+        "gen": 8,
+        "best": 2.805865278787678e-06,
+        "avg": 0.006722492566262726,
+        "archive": 77,
+        "grad_sens": 0.44155844155844154,
+        "top_formula": "exp / - 1.8300538425345128 g -0.4757592120684273",
+        "latex": "e^{\\frac{(1.8300538425345128 - \\|g\\|)}{-0.4757592120684273}}",
+        "ms": 190
+      },
+      {
+        "gen": 9,
+        "best": 1.8960080296892556e-06,
+        "avg": 0.001659373031398559,
+        "archive": 82,
+        "grad_sens": 0.43645699614890887,
+        "top_formula": "exp / - - -1.47088510508196 log t g sin -0.4757592120684273",
+        "latex": "e^{\\frac{((-1.47088510508196 - \\ln(t)) - \\|g\\|)}{\\sin(-0.4757592120684273)}}",
+        "ms": 200
+      },
+      {
+        "gen": 10,
+        "best": 1.849222030614328e-06,
+        "avg": 0.006937336896455166,
+        "archive": 94,
+        "grad_sens": 0.4440089585666293,
+        "top_formula": "abs / sin dl 0.02811587138344196",
+        "latex": "|\\frac{\\sin(\\Delta\\ell)}{0.02811587138344196}|",
+        "ms": 181
+      },
+      {
+        "gen": 11,
+        "best": 1.849222030614328e-06,
+        "avg": 0.004588123936989064,
+        "archive": 100,
+        "grad_sens": 0.44947368421052625,
+        "top_formula": "abs / sin dl 0.02811587138344196",
+        "latex": "|\\frac{\\sin(\\Delta\\ell)}{0.02811587138344196}|",
+        "ms": 199
+      },
+      {
+        "gen": 12,
+        "best": 1.849222030614328e-06,
+        "avg": 0.008569495988342331,
+        "archive": 110,
+        "grad_sens": 0.4334928229665071,
+        "top_formula": "abs / sin dl 0.02811587138344196",
+        "latex": "|\\frac{\\sin(\\Delta\\ell)}{0.02811587138344196}|",
+        "ms": 196
+      },
+      {
+        "gen": 13,
+        "best": 7.748602648405267e-09,
+        "avg": 0.0023682526822410344,
+        "archive": 121,
+        "grad_sens": 0.42496737712048704,
+        "top_formula": "exp / - 1.8300538425345128 g cos - + cos -1.7779259117129778 dl sin / dl 1.1054064347790673",
+        "latex": "e^{\\frac{(1.8300538425345128 - \\|g\\|)}{\\cos(((\\cos(-1.7779259117129778) + \\Delta\\ell) - \\sin(\\frac{\\Delta\\ell}{1.1054064347790673})))}}",
+        "ms": 185
+      },
+      {
+        "gen": 14,
+        "best": 1.3172561352803314e-07,
+        "avg": 0.003444735667059007,
+        "archive": 129,
+        "grad_sens": 0.4206446348429211,
+        "top_formula": "exp / - 1.8300538425345128 g cos - + cos -1.7779259117129778 dl sin / dl 1.1054064347790673",
+        "latex": "e^{\\frac{(1.8300538425345128 - \\|g\\|)}{\\cos(((\\cos(-1.7779259117129778) + \\Delta\\ell) - \\sin(\\frac{\\Delta\\ell}{1.1054064347790673})))}}",
+        "ms": 196
+      },
+      {
+        "gen": 15,
+        "best": 1.3172561352803314e-07,
+        "avg": 0.0025300956632463567,
+        "archive": 134,
+        "grad_sens": 0.41908876669285144,
+        "top_formula": "exp / - 1.8300538425345128 g cos - + cos -1.7779259117129778 dl sin / dl 1.1054064347790673",
+        "latex": "e^{\\frac{(1.8300538425345128 - \\|g\\|)}{\\cos(((\\cos(-1.7779259117129778) + \\Delta\\ell) - \\sin(\\frac{\\Delta\\ell}{1.1054064347790673})))}}",
+        "ms": 215
+      },
+      {
+        "gen": 16,
+        "best": 0.0,
+        "avg": 0.003511162811730628,
+        "archive": 138,
+        "grad_sens": 0.41228070175438586,
+        "top_formula": "exp / - 1.8300538425345128 g cos / / sqrt 0.9748103119764147 sqrt 0.12206300624224875 dl",
+        "latex": "e^{\\frac{(1.8300538425345128 - \\|g\\|)}{\\cos(\\frac{\\frac{\\sqrt{0.9748103119764147}}{\\sqrt{0.12206300624224875}}}{\\Delta\\ell})}}",
+        "ms": 187
+      },
+      {
+        "gen": 17,
+        "best": 0.0,
+        "avg": 0.008294508566930859,
+        "archive": 141,
+        "grad_sens": 0.40910787607316157,
+        "top_formula": "exp / - 1.8300538425345128 g cos / / sqrt 0.9748103119764147 sqrt 0.12206300624224875 dl",
+        "latex": "e^{\\frac{(1.8300538425345128 - \\|g\\|)}{\\cos(\\frac{\\frac{\\sqrt{0.9748103119764147}}{\\sqrt{0.12206300624224875}}}{\\Delta\\ell})}}",
+        "ms": 180
+      },
+      {
+        "gen": 18,
+        "best": 0.0,
+        "avg": 0.006524905689582283,
+        "archive": 149,
+        "grad_sens": 0.4125750618156127,
+        "top_formula": "exp / - 1.8300538425345128 g cos / / sqrt 0.9748103119764147 sqrt 0.12206300624224875 dl",
+        "latex": "e^{\\frac{(1.8300538425345128 - \\|g\\|)}{\\cos(\\frac{\\frac{\\sqrt{0.9748103119764147}}{\\sqrt{0.12206300624224875}}}{\\Delta\\ell})}}",
+        "ms": 193
+      },
+      {
+        "gen": 19,
+        "best": 0.0,
+        "avg": 0.0060060756281373525,
+        "archive": 159,
+        "grad_sens": 0.4121151936444885,
+        "top_formula": "exp / - 1.8300538425345128 g cos / / sqrt 0.9748103119764147 sqrt 0.12206300624224875 dl",
+        "latex": "e^{\\frac{(1.8300538425345128 - \\|g\\|)}{\\cos(\\frac{\\frac{\\sqrt{0.9748103119764147}}{\\sqrt{0.12206300624224875}}}{\\Delta\\ell})}}",
+        "ms": 194
+      },
+      {
+        "gen": 20,
+        "best": 0.0,
+        "avg": 0.0028314056126077956,
+        "archive": 171,
+        "grad_sens": 0.4142813173284086,
+        "top_formula": "exp / - 1.8300538425345128 g cos / / sqrt 0.9748103119764147 sqrt 0.12206300624224875 dl",
+        "latex": "e^{\\frac{(1.8300538425345128 - \\|g\\|)}{\\cos(\\frac{\\frac{\\sqrt{0.9748103119764147}}{\\sqrt{0.12206300624224875}}}{\\Delta\\ell})}}",
+        "ms": 195
+      }
+    ],
+    "elapsed": 6.557980298995972
+  },
+  "benchmark": {
+    "rank": 7,
+    "n_candidates": 8,
+    "n_beaten": 0,
+    "formula_mean": 0.9735164189763935,
+    "is_grad_aware": true,
+    "elapsed": 0.19099974632263184
+  },
+  "benchmark_full": {
+    "formula": "exp / - 1.8300538425345128 g cos / / sqrt 0.9748103119764147 sqrt 0.12206300624224875 dl",
+    "n_seeds": 5,
+    "formula_trial": {
+      "name": "exp / - 1.8300538425345128 g cos / / sqrt 0.9748103119764147 sqrt 0.12206300624224875 dl",
+      "fitnesses": [
+        0.8868963086092623,
+        0.8578423638679211,
+        0.9702346025554318,
+        0.9639548949127914,
+        1.188653924936562
+      ],
+      "mean": 0.9735164189763935,
+      "std": 0.11599126697941804,
+      "n_valid": 5
+    },
+    "baseline_trials": {
+      "Cosine Annealing": {
+        "name": "Cosine Annealing",
+        "fitnesses": [
+          0.3750860126351781,
+          0.34649112925100795,
+          0.4485795228116743,
+          0.4313045362648875,
+          0.6546738476393409
+        ],
+        "mean": 0.45122700972041774,
+        "std": 0.10822345964675481,
+        "n_valid": 5
+      },
+      "Step Decay": {
+        "name": "Step Decay",
+        "fitnesses": [
+          0.3858228009916355,
+          0.356159245837133,
+          0.462689392995107,
+          0.44715564525156054,
+          0.6707558324113787
+        ],
+        "mean": 0.464516583497363,
+        "std": 0.11024825860247886,
+        "n_valid": 5
+      },
+      "Warm Restarts": {
+        "name": "Warm Restarts",
+        "fitnesses": [
+          0.3842037027690018,
+          0.3548510775724922,
+          0.4582286158403763,
+          0.4494060799481267,
+          0.6788419879927483
+        ],
+        "mean": 0.4651062928245491,
+        "std": 0.11373494457032132,
+        "n_valid": 5
+      },
+      "Linear Decay": {
+        "name": "Linear Decay",
+        "fitnesses": [
+          0.3788543517953807,
+          0.3500045465399424,
+          0.4528433455307979,
+          0.43554006120866323,
+          0.6585607429747419
+        ],
+        "mean": 0.4551606096099052,
+        "std": 0.10829810013776033,
+        "n_valid": 5
+      },
+      "Constant LR": {
+        "name": "Constant LR",
+        "fitnesses": [
+          0.8868963086092623,
+          0.8578423638679211,
+          0.9702346025554318,
+          0.9639548949127914,
+          1.188653924936562
+        ],
+        "mean": 0.9735164189763935,
+        "std": 0.11599126697941804,
+        "n_valid": 5
+      },
+      "1-Cycle": {
+        "name": "1-Cycle",
+        "fitnesses": [
+          0.36457156162692694,
+          0.33737710413493144,
+          0.4410326095909145,
+          0.43409128129103536,
+          0.6556037880367843
+        ],
+        "mean": 0.4465352689361185,
+        "std": 0.1118287369381911,
+        "n_valid": 5
+      },
+      "Exponential Decay": {
+        "name": "Exponential Decay",
+        "fitnesses": [
+          0.3817930158733116,
+          0.3529263393574272,
+          0.45237840842911997,
+          0.42456299174826695,
+          0.6459898367988067
+        ],
+        "mean": 0.45153011844138646,
+        "std": 0.10308103249954542,
+        "n_valid": 5
+      }
+    },
+    "comparisons": {
+      "Cosine Annealing": {
+        "baseline_name": "Cosine Annealing",
+        "formula_mean": 0.9735164189763935,
+        "baseline_mean": 0.45122700972041774,
+        "delta_mean": 0.5222894092559758,
+        "delta_std": 0.009735284742544618,
+        "win_rate": 0.0,
+        "ci_lower": 0.5135956281851504,
+        "ci_upper": 0.530717246596938,
+        "wilcoxon_p": 0.0625,
+        "n_seeds": 5,
+        "formula_wins": false,
+        "is_significant": false
+      },
+      "Step Decay": {
+        "baseline_name": "Step Decay",
+        "formula_mean": 0.9735164189763935,
+        "baseline_mean": 0.464516583497363,
+        "delta_mean": 0.5089998354790305,
+        "delta_std": 0.007190087679467691,
+        "win_rate": 0.0,
+        "ci_lower": 0.502611692171431,
+        "ci_upper": 0.5151682102138402,
+        "wilcoxon_p": 0.0625,
+        "n_seeds": 5,
+        "formula_wins": false,
+        "is_significant": false
+      },
+      "Warm Restarts": {
+        "baseline_name": "Warm Restarts",
+        "formula_mean": 0.9735164189763935,
+        "baseline_mean": 0.4651062928245491,
+        "delta_mean": 0.5084101261518444,
+        "delta_std": 0.0047881656389484675,
+        "win_rate": 0.0,
+        "ci_lower": 0.5042359442430385,
+        "ci_upper": 0.5125843080606508,
+        "wilcoxon_p": 0.0625,
+        "n_seeds": 5,
+        "formula_wins": false,
+        "is_significant": false
+      },
+      "Linear Decay": {
+        "baseline_name": "Linear Decay",
+        "formula_mean": 0.9735164189763935,
+        "baseline_mean": 0.4551606096099052,
+        "delta_mean": 0.5183558093664884,
+        "delta_std": 0.009559120862151648,
+        "win_rate": 0.0,
+        "ci_lower": 0.509830161061671,
+        "ci_upper": 0.5265457880197677,
+        "wilcoxon_p": 0.0625,
+        "n_seeds": 5,
+        "formula_wins": false,
+        "is_significant": false
+      },
+      "Constant LR": {
+        "baseline_name": "Constant LR",
+        "formula_mean": 0.9735164189763935,
+        "baseline_mean": 0.9735164189763935,
+        "delta_mean": 0.0,
+        "delta_std": 0.0,
+        "win_rate": 0.0,
+        "ci_lower": 0.0,
+        "ci_upper": 0.0,
+        "wilcoxon_p": null,
+        "n_seeds": 5,
+        "formula_wins": false,
+        "is_significant": false
+      },
+      "1-Cycle": {
+        "baseline_name": "1-Cycle",
+        "formula_mean": 0.9735164189763935,
+        "baseline_mean": 0.4465352689361185,
+        "delta_mean": 0.526981150040275,
+        "delta_std": 0.0047793777215888985,
+        "win_rate": 0.0,
+        "ci_lower": 0.522716827960612,
+        "ci_upper": 0.5310058988015169,
+        "wilcoxon_p": 0.0625,
+        "n_seeds": 5,
+        "formula_wins": false,
+        "is_significant": false
+      },
+      "Exponential Decay": {
+        "baseline_name": "Exponential Decay",
+        "formula_mean": 0.9735164189763935,
+        "baseline_mean": 0.45153011844138646,
+        "delta_mean": 0.521986300535007,
+        "delta_std": 0.01627276226019565,
+        "win_rate": 0.0,
+        "ci_lower": 0.5075789657238403,
+        "ci_upper": 0.5357391983515282,
+        "wilcoxon_p": 0.0625,
+        "n_seeds": 5,
+        "formula_wins": false,
+        "is_significant": false
+      }
+    },
+    "rank": 7,
+    "n_candidates": 8,
+    "best_baseline_name": "1-Cycle",
+    "beats_best_baseline": false,
+    "n_baselines_beaten": 0
+  },
+  "ablation": {
+    "result": {
+      "runs": {
+        "t_only": {
+          "config_name": "t_only",
+          "config_label": "Time-only  lr = f(t)",
+          "best_formula_prefix": "exp / - 1.8300538425345128 cos exp + 0.5211982938084563 t -0.4757592120684273",
+          "best_formula_latex": "e^{\\frac{(1.8300538425345128 - \\cos(e^{(0.5211982938084563 + t)}))}{-0.4757592120684273}}",
+          "best_fitness": 1.6274894960588426e-06,
+          "final_archive_size": 15,
+          "final_gradient_sensitivity": 0.0,
+          "elapsed_sec": 1.9424259662628174,
+          "generation_log": [
+            {
+              "gen": 1,
+              "best_fitness": 4.304250978748314e-06,
+              "avg_fitness": 0.01432951288026945,
+              "archive_size": 7,
+              "grad_sensitivity": 0.0,
+              "top_formula": "exp / - 1.8300538425345128 0.689913352468396 sin -0.4757592120684273",
+              "top_formula_latex": "e^{\\frac{(1.8300538425345128 - 0.689913352468396)}{\\sin(-0.4757592120684273)}}",
+              "ms": 177
+            },
+            {
+              "gen": 2,
+              "best_fitness": 3.1092515655473107e-06,
+              "avg_fitness": 0.0002890508965954337,
+              "archive_size": 11,
+              "grad_sensitivity": 0.0,
+              "top_formula": "exp / - 1.8300538425345128 cos exp + 0.5211982938084563 t sin -0.4757592120684273",
+              "top_formula_latex": "e^{\\frac{(1.8300538425345128 - \\cos(e^{(0.5211982938084563 + t)}))}{\\sin(-0.4757592120684273)}}",
+              "ms": 194
+            },
+            {
+              "gen": 3,
+              "best_fitness": 1.6274894960588426e-06,
+              "avg_fitness": 0.0029053952012678304,
+              "archive_size": 12,
+              "grad_sensitivity": 0.0,
+              "top_formula": "exp / - 1.8300538425345128 cos exp + 0.5211982938084563 t -0.4757592120684273",
+              "top_formula_latex": "e^{\\frac{(1.8300538425345128 - \\cos(e^{(0.5211982938084563 + t)}))}{-0.4757592120684273}}",
+              "ms": 193
+            },
+            {
+              "gen": 4,
+              "best_fitness": 2.9167263164708856e-06,
+              "avg_fitness": 0.0036597163499696504,
+              "archive_size": 13,
+              "grad_sensitivity": 0.0,
+              "top_formula": "exp / - sqrt + cos t t cos exp + 0.5211982938084563 t sin -0.4757592120684273",
+              "top_formula_latex": "e^{\\frac{(\\sqrt{(\\cos(t) + t)} - \\cos(e^{(0.5211982938084563 + t)}))}{\\sin(-0.4757592120684273)}}",
+              "ms": 189
+            },
+            {
+              "gen": 5,
+              "best_fitness": 2.1305513655534014e-06,
+              "avg_fitness": 0.004536680371936172,
+              "archive_size": 13,
+              "grad_sensitivity": 0.0,
+              "top_formula": "exp / - 2.180270700778715 t -0.4757592120684273",
+              "top_formula_latex": "e^{\\frac{(2.180270700778715 - t)}{-0.4757592120684273}}",
+              "ms": 186
+            },
+            {
+              "gen": 6,
+              "best_fitness": 2.1305513655534014e-06,
+              "avg_fitness": 0.0025180756190307783,
+              "archive_size": 14,
+              "grad_sensitivity": 0.0,
+              "top_formula": "exp / - 2.180270700778715 t -0.4757592120684273",
+              "top_formula_latex": "e^{\\frac{(2.180270700778715 - t)}{-0.4757592120684273}}",
+              "ms": 207
+            },
+            {
+              "gen": 7,
+              "best_fitness": 2.1087817003717646e-06,
+              "avg_fitness": 0.00639898895856143,
+              "archive_size": 14,
+              "grad_sensitivity": 0.0,
+              "top_formula": "exp / / - 1.5908591428388614 0.3857853323508867 sin -0.4757592120684273 - t sqrt - t t",
+              "top_formula_latex": "e^{\\frac{\\frac{(1.5908591428388614 - 0.3857853323508867)}{\\sin(-0.4757592120684273)}}{(t - \\sqrt{(t - t)})}}",
+              "ms": 214
+            },
+            {
+              "gen": 8,
+              "best_fitness": 2.190757186326664e-06,
+              "avg_fitness": 0.0015208194038076463,
+              "archive_size": 14,
+              "grad_sensitivity": 0.0,
+              "top_formula": "exp / - 1.8300538425345128 abs + 0.5211982938084563 t - t t",
+              "top_formula_latex": "e^{\\frac{(1.8300538425345128 - |(0.5211982938084563 + t)|)}{(t - t)}}",
+              "ms": 188
+            },
+            {
+              "gen": 9,
+              "best_fitness": 2.0852532998105744e-06,
+              "avg_fitness": 0.001446408922485413,
+              "archive_size": 15,
+              "grad_sensitivity": 0.0,
+              "top_formula": "exp / - sqrt + cos t t cos exp + 0.5211982938084563 0.9462371252243689 exp -0.4757592120684273",
+              "top_formula_latex": "e^{\\frac{(\\sqrt{(\\cos(t) + t)} - \\cos(e^{(0.5211982938084563 + 0.9462371252243689)}))}{e^{-0.4757592120684273}}}",
+              "ms": 200
+            },
+            {
+              "gen": 10,
+              "best_fitness": 2.0852532998105744e-06,
+              "avg_fitness": 0.005188501948820582,
+              "archive_size": 15,
+              "grad_sensitivity": 0.0,
+              "top_formula": "exp / - sqrt + cos t t cos exp + 0.5211982938084563 0.9462371252243689 exp -0.4757592120684273",
+              "top_formula_latex": "e^{\\frac{(\\sqrt{(\\cos(t) + t)} - \\cos(e^{(0.5211982938084563 + 0.9462371252243689)}))}{e^{-0.4757592120684273}}}",
+              "ms": 190
+            }
+          ],
+          "benchmark_rank": 7,
+          "benchmark_n_beaten": 1
+        },
+        "t_g": {
+          "config_name": "t_g",
+          "config_label": "Time + gradient  lr = f(t, g)",
+          "best_formula_prefix": "exp / 1.995496963124002 cos -0.4757592120684273",
+          "best_formula_latex": "e^{\\frac{1.995496963124002}{\\cos(-0.4757592120684273)}}",
+          "best_fitness": 3.4787881304509938e-06,
+          "final_archive_size": 83,
+          "final_gradient_sensitivity": 0.4451490171211162,
+          "elapsed_sec": 1.9388458728790283,
+          "generation_log": [
+            {
+              "gen": 1,
+              "best_fitness": 4.304250978748314e-06,
+              "avg_fitness": 0.01562920382710934,
+              "archive_size": 12,
+              "grad_sensitivity": 0.25438596491228066,
+              "top_formula": "exp / - 1.8300538425345128 0.689913352468396 sin -0.4757592120684273",
+              "top_formula_latex": "e^{\\frac{(1.8300538425345128 - 0.689913352468396)}{\\sin(-0.4757592120684273)}}",
+              "ms": 175
+            },
+            {
+              "gen": 2,
+              "best_fitness": 4.253648967278423e-06,
+              "avg_fitness": 0.009420839698590056,
+              "archive_size": 21,
+              "grad_sensitivity": 0.3057644110275689,
+              "top_formula": "exp abs / / - 1.8300538425345128 0.689913352468396 sin -0.4757592120684273 0.5255843339792405",
+              "top_formula_latex": "e^{|\\frac{\\frac{(1.8300538425345128 - 0.689913352468396)}{\\sin(-0.4757592120684273)}}{0.5255843339792405}|}",
+              "ms": 202
+            },
+            {
+              "gen": 3,
+              "best_fitness": 3.955922238674248e-06,
+              "avg_fitness": 0.011048969752149978,
+              "archive_size": 29,
+              "grad_sensitivity": 0.3811252268602541,
+              "top_formula": "exp abs + exp cos abs t 0.5255843339792405",
+              "top_formula_latex": "e^{|(e^{\\cos(|t|)} + 0.5255843339792405)|}",
+              "ms": 192
+            },
+            {
+              "gen": 4,
+              "best_fitness": 4.253648967278423e-06,
+              "avg_fitness": 0.00596908807270474,
+              "archive_size": 39,
+              "grad_sensitivity": 0.3994601889338731,
+              "top_formula": "exp abs / / - 1.8300538425345128 0.689913352468396 sin -0.4757592120684273 0.5255843339792405",
+              "top_formula_latex": "e^{|\\frac{\\frac{(1.8300538425345128 - 0.689913352468396)}{\\sin(-0.4757592120684273)}}{0.5255843339792405}|}",
+              "ms": 187
+            },
+            {
+              "gen": 5,
+              "best_fitness": 7.3867222454282455e-06,
+              "avg_fitness": 0.008110046585775185,
+              "archive_size": 43,
+              "grad_sensitivity": 0.41615667074663404,
+              "top_formula": "exp * 1.62724467027265 sqrt g",
+              "top_formula_latex": "e^{(1.62724467027265 \\cdot \\sqrt{\\|g\\|})}",
+              "ms": 213
+            },
+            {
+              "gen": 6,
+              "best_fitness": 7.3867222454282455e-06,
+              "avg_fitness": 0.010953012189438104,
+              "archive_size": 51,
+              "grad_sensitivity": 0.42827657378740974,
+              "top_formula": "exp * 1.62724467027265 sqrt g",
+              "top_formula_latex": "e^{(1.62724467027265 \\cdot \\sqrt{\\|g\\|})}",
+              "ms": 183
+            },
+            {
+              "gen": 7,
+              "best_fitness": 6.246801149245584e-06,
+              "avg_fitness": 0.004674876846125799,
+              "archive_size": 55,
+              "grad_sensitivity": 0.4401913875598086,
+              "top_formula": "+ + 1.995496963124002 exp cos t - abs t * abs sqrt abs 1.9483989408913835 g",
+              "top_formula_latex": "((1.995496963124002 + e^{\\cos(t)}) + (|t| - (|\\sqrt{|1.9483989408913835|}| \\cdot \\|g\\|)))",
+              "ms": 180
+            },
+            {
+              "gen": 8,
+              "best_fitness": 4.025956513942219e-06,
+              "avg_fitness": 0.004475681025446142,
+              "archive_size": 62,
+              "grad_sensitivity": 0.4584040747028864,
+              "top_formula": "exp / sqrt * -0.988197959291562 - g -0.6733405834554194 log sqrt log 0.4404480980143908",
+              "top_formula_latex": "e^{\\frac{\\sqrt{(-0.988197959291562 \\cdot (\\|g\\| - -0.6733405834554194))}}{\\ln(\\sqrt{\\ln(0.4404480980143908)})}}",
+              "ms": 201
+            },
+            {
+              "gen": 9,
+              "best_fitness": 6.246801149245584e-06,
+              "avg_fitness": 0.005638196795524364,
+              "archive_size": 72,
+              "grad_sensitivity": 0.4429824561403509,
+              "top_formula": "+ + 1.995496963124002 exp cos t - abs t * abs sqrt abs 1.9483989408913835 g",
+              "top_formula_latex": "((1.995496963124002 + e^{\\cos(t)}) + (|t| - (|\\sqrt{|1.9483989408913835|}| \\cdot \\|g\\|)))",
+              "ms": 193
+            },
+            {
+              "gen": 10,
+              "best_fitness": 3.4787881304509938e-06,
+              "avg_fitness": 0.004048531406340317,
+              "archive_size": 83,
+              "grad_sensitivity": 0.4451490171211162,
+              "top_formula": "exp / 1.995496963124002 cos -0.4757592120684273",
+              "top_formula_latex": "e^{\\frac{1.995496963124002}{\\cos(-0.4757592120684273)}}",
+              "ms": 206
+            }
+          ],
+          "benchmark_rank": 8,
+          "benchmark_n_beaten": 0
+        },
+        "t_g_dl": {
+          "config_name": "t_g_dl",
+          "config_label": "Full  lr = f(t, g, dl)",
+          "best_formula_prefix": "exp / / 1.8300538425345128 0.689913352468396 sin cos exp - dl 0.17544914211480966",
+          "best_formula_latex": "e^{\\frac{\\frac{1.8300538425345128}{0.689913352468396}}{\\sin(\\cos(e^{(\\Delta\\ell - 0.17544914211480966)}))}}",
+          "best_fitness": 2.4717478481761646e-06,
+          "final_archive_size": 92,
+          "final_gradient_sensitivity": 0.3764302059496567,
+          "elapsed_sec": 2.072234869003296,
+          "generation_log": [
+            {
+              "gen": 1,
+              "best_fitness": 4.304250978748314e-06,
+              "avg_fitness": 0.014019463992599412,
+              "archive_size": 15,
+              "grad_sensitivity": 0.20350877192982458,
+              "top_formula": "exp / - 1.8300538425345128 0.689913352468396 sin -0.4757592120684273",
+              "top_formula_latex": "e^{\\frac{(1.8300538425345128 - 0.689913352468396)}{\\sin(-0.4757592120684273)}}",
+              "ms": 198
+            },
+            {
+              "gen": 2,
+              "best_fitness": 4.304250978748314e-06,
+              "avg_fitness": 0.009459751571375819,
+              "archive_size": 20,
+              "grad_sensitivity": 0.29736842105263156,
+              "top_formula": "exp / - 1.8300538425345128 0.689913352468396 sin -0.4757592120684273",
+              "top_formula_latex": "e^{\\frac{(1.8300538425345128 - 0.689913352468396)}{\\sin(-0.4757592120684273)}}",
+              "ms": 177
+            },
+            {
+              "gen": 3,
+              "best_fitness": 2.8746405860147206e-06,
+              "avg_fitness": 0.01075075608264342,
+              "archive_size": 28,
+              "grad_sensitivity": 0.30075187969924816,
+              "top_formula": "exp / 1.1918405048333398 sin -0.4757592120684273",
+              "top_formula_latex": "e^{\\frac{1.1918405048333398}{\\sin(-0.4757592120684273)}}",
+              "ms": 196
+            },
+            {
+              "gen": 4,
+              "best_fitness": 3.33277125719178e-06,
+              "avg_fitness": 0.009575245858589673,
+              "archive_size": 35,
+              "grad_sensitivity": 0.2917293233082707,
+              "top_formula": "exp / / 1.8300538425345128 0.689913352468396 sin cos exp - t 0.17544914211480966",
+              "top_formula_latex": "e^{\\frac{\\frac{1.8300538425345128}{0.689913352468396}}{\\sin(\\cos(e^{(t - 0.17544914211480966)}))}}",
+              "ms": 205
+            },
+            {
+              "gen": 5,
+              "best_fitness": 2.4717478481761646e-06,
+              "avg_fitness": 0.007505056802528998,
+              "archive_size": 44,
+              "grad_sensitivity": 0.29904306220095694,
+              "top_formula": "exp / / 1.8300538425345128 0.689913352468396 sin cos exp - dl 0.17544914211480966",
+              "top_formula_latex": "e^{\\frac{\\frac{1.8300538425345128}{0.689913352468396}}{\\sin(\\cos(e^{(\\Delta\\ell - 0.17544914211480966)}))}}",
+              "ms": 285
+            },
+            {
+              "gen": 6,
+              "best_fitness": 2.4717478481761646e-06,
+              "avg_fitness": 0.005310288701087984,
+              "archive_size": 52,
+              "grad_sensitivity": 0.30971659919028344,
+              "top_formula": "exp / / 1.8300538425345128 0.689913352468396 sin cos exp - dl 0.17544914211480966",
+              "top_formula_latex": "e^{\\frac{\\frac{1.8300538425345128}{0.689913352468396}}{\\sin(\\cos(e^{(\\Delta\\ell - 0.17544914211480966)}))}}",
+              "ms": 187
+            },
+            {
+              "gen": 7,
+              "best_fitness": 2.4717478481761646e-06,
+              "avg_fitness": 0.008399027531379489,
+              "archive_size": 65,
+              "grad_sensitivity": 0.32226720647773277,
+              "top_formula": "exp / / 1.8300538425345128 0.689913352468396 sin cos exp - dl 0.17544914211480966",
+              "top_formula_latex": "e^{\\frac{\\frac{1.8300538425345128}{0.689913352468396}}{\\sin(\\cos(e^{(\\Delta\\ell - 0.17544914211480966)}))}}",
+              "ms": 205
+            },
+            {
+              "gen": 8,
+              "best_fitness": 2.4717478481761646e-06,
+              "avg_fitness": 0.006537187944104517,
+              "archive_size": 77,
+              "grad_sensitivity": 0.339712918660287,
+              "top_formula": "exp / / 1.8300538425345128 0.689913352468396 sin cos exp - dl 0.17544914211480966",
+              "top_formula_latex": "e^{\\frac{\\frac{1.8300538425345128}{0.689913352468396}}{\\sin(\\cos(e^{(\\Delta\\ell - 0.17544914211480966)}))}}",
+              "ms": 194
+            },
+            {
+              "gen": 9,
+              "best_fitness": 2.4717478481761646e-06,
+              "avg_fitness": 0.0035024166128323486,
+              "archive_size": 85,
+              "grad_sensitivity": 0.35417956656346744,
+              "top_formula": "exp / / 1.8300538425345128 0.689913352468396 sin cos exp - dl 0.17544914211480966",
+              "top_formula_latex": "e^{\\frac{\\frac{1.8300538425345128}{0.689913352468396}}{\\sin(\\cos(e^{(\\Delta\\ell - 0.17544914211480966)}))}}",
+              "ms": 214
+            },
+            {
+              "gen": 10,
+              "best_fitness": 2.4717478481761646e-06,
+              "avg_fitness": 0.004797400253408295,
+              "archive_size": 92,
+              "grad_sensitivity": 0.3764302059496567,
+              "top_formula": "exp / / 1.8300538425345128 0.689913352468396 sin cos exp - dl 0.17544914211480966",
+              "top_formula_latex": "e^{\\frac{\\frac{1.8300538425345128}{0.689913352468396}}{\\sin(\\cos(e^{(\\Delta\\ell - 0.17544914211480966)}))}}",
+              "ms": 206
+            }
+          ],
+          "benchmark_rank": 8,
+          "benchmark_n_beaten": 0
+        }
+      },
+      "total_elapsed_sec": 6.434003829956055,
+      "summary": [
+        {
+          "config": "Time-only  lr = f(t)",
+          "best_fitness": 1.6274894960588426e-06,
+          "archive_size": 15,
+          "grad_sens": 0.0,
+          "bench_rank": 7,
+          "bench_beaten": 1,
+          "formula": "exp / - 1.8300538425345128 cos exp + 0.5211982938084563 t -0.4757592120684273",
+          "elapsed_sec": 1.9424259662628174
+        },
+        {
+          "config": "Full  lr = f(t, g, dl)",
+          "best_fitness": 2.4717478481761646e-06,
+          "archive_size": 92,
+          "grad_sens": 0.3764302059496567,
+          "bench_rank": 8,
+          "bench_beaten": 0,
+          "formula": "exp / / 1.8300538425345128 0.689913352468396 sin cos exp - dl 0.17544914211480966",
+          "elapsed_sec": 2.072234869003296
+        },
+        {
+          "config": "Time + gradient  lr = f(t, g)",
+          "best_fitness": 3.4787881304509938e-06,
+          "archive_size": 83,
+          "grad_sens": 0.4451490171211162,
+          "bench_rank": 8,
+          "bench_beaten": 0,
+          "formula": "exp / 1.995496963124002 cos -0.4757592120684273",
+          "elapsed_sec": 1.9388458728790283
+        }
+      ]
+    },
+    "improvement": -0.5184303332385855,
+    "elapsed": 6.434828281402588
+  }
+}

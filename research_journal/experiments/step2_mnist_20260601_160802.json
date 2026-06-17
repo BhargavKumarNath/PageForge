@@ -1,0 +1,267 @@
+{
+  "run_timestamp": "20260601_160802",
+  "formula": "exp / - 1.8300538425345128 g cos / / sqrt 0.9748103119764147 sqrt 0.12206300624224875 dl",
+  "is_grad_aware": true,
+  "args": {
+    "formula": "",
+    "epochs": 3,
+    "seeds": 1,
+    "batch_size": 128,
+    "base_lr": 0.05,
+    "warmup_fraction": 0.05,
+    "data_dir": "data",
+    "output_dir": "research_journal/experiments",
+    "no_amp": false
+  },
+  "total_elapsed_s": 156.07114839553833,
+  "device": "cuda",
+  "results": [
+    {
+      "name": "SymboLR (discovered)",
+      "formula": "exp / - 1.8300538425345128 g cos / / sqrt 0.9748103119764147 sqrt 0.12206300624224875 dl",
+      "test_acc_mean": 0.9875,
+      "test_acc_std": 0.0,
+      "test_acc_max": 0.9875,
+      "val_acc_final_mean": 0.9856666666666667,
+      "train_loss_final_mean": 0.04498551010588805,
+      "lr_mean_final": 0.25,
+      "lr_std_final": 0.0,
+      "elapsed_mean_s": 29.504924774169922,
+      "per_seed": [
+        {
+          "seed": 42,
+          "test_acc": 0.9875,
+          "test_loss": 0.03885124179124832,
+          "elapsed_s": 29.504924774169922,
+          "norm_stats": {
+            "log_g_mean": -4.505487587959782e-07,
+            "log_g_std": 1e-06,
+            "dl_mean": -0.03519226637753573,
+            "dl_std": 0.11923218497438992
+          },
+          "epoch_history": [
+            {
+              "epoch": 1,
+              "train_loss": 0.30522532025227944,
+              "val_loss": 0.16785224747657776,
+              "val_acc": 0.9460833333333334,
+              "lr_mean": 0.22013333333333332,
+              "lr_std": 0.07128334697217545
+            },
+            {
+              "epoch": 2,
+              "train_loss": 0.06393591258923213,
+              "val_loss": 0.04839273916681608,
+              "val_acc": 0.9845,
+              "lr_mean": 0.25,
+              "lr_std": 0.0
+            },
+            {
+              "epoch": 3,
+              "train_loss": 0.04498551010588805,
+              "val_loss": 0.04284977196653684,
+              "val_acc": 0.9856666666666667,
+              "lr_mean": 0.25,
+              "lr_std": 0.0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Cosine Annealing",
+      "formula": "cosine_annealing",
+      "test_acc_mean": 0.99,
+      "test_acc_std": 0.0,
+      "test_acc_max": 0.99,
+      "val_acc_final_mean": 0.9885833333333334,
+      "train_loss_final_mean": 0.03217437280962865,
+      "lr_mean_final": 0.0047726041749290285,
+      "lr_std_final": 0.0037373467331860205,
+      "elapsed_mean_s": 31.311301708221436,
+      "per_seed": [
+        {
+          "seed": 42,
+          "test_acc": 0.99,
+          "test_loss": 0.03297122756242752,
+          "elapsed_s": 31.311301708221436,
+          "norm_stats": null,
+          "epoch_history": [
+            {
+              "epoch": 1,
+              "train_loss": 0.23773740827292203,
+              "val_loss": 0.06845001411437988,
+              "val_acc": 0.9785,
+              "lr_mean": 0.045727395825070974,
+              "lr_std": 0.003737346733186018
+            },
+            {
+              "epoch": 2,
+              "train_loss": 0.05157459048181772,
+              "val_loss": 0.04098796210686366,
+              "val_acc": 0.9881666666666666,
+              "lr_mean": 0.025250000000000005,
+              "lr_std": 0.007285430614494881
+            },
+            {
+              "epoch": 3,
+              "train_loss": 0.03217437280962865,
+              "val_loss": 0.03820149432619413,
+              "val_acc": 0.9885833333333334,
+              "lr_mean": 0.0047726041749290285,
+              "lr_std": 0.0037373467331860205
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "1-Cycle",
+      "formula": "one_cycle",
+      "test_acc_mean": 0.9893,
+      "test_acc_std": 0.0,
+      "test_acc_max": 0.9893,
+      "val_acc_final_mean": 0.9885833333333334,
+      "train_loss_final_mean": 0.03301093387107054,
+      "lr_mean_final": 0.008734584009903998,
+      "lr_std_final": 0.007022017843898678,
+      "elapsed_mean_s": 31.562281608581543,
+      "per_seed": [
+        {
+          "seed": 42,
+          "test_acc": 0.9893,
+          "test_loss": 0.03356496442556381,
+          "elapsed_s": 31.562281608581543,
+          "norm_stats": null,
+          "epoch_history": [
+            {
+              "epoch": 1,
+              "train_loss": 0.4742752758363883,
+              "val_loss": 0.226496942281723,
+              "val_acc": 0.9256666666666666,
+              "lr_mean": 0.027669679369269427,
+              "lr_std": 0.015461245202454739
+            },
+            {
+              "epoch": 2,
+              "train_loss": 0.07234052569419146,
+              "val_loss": 0.05117406049370766,
+              "val_acc": 0.9836666666666667,
+              "lr_mean": 0.039279705295682685,
+              "lr_std": 0.008003386530284975
+            },
+            {
+              "epoch": 3,
+              "train_loss": 0.03301093387107054,
+              "val_loss": 0.03617105573415756,
+              "val_acc": 0.9885833333333334,
+              "lr_mean": 0.008734584009903998,
+              "lr_std": 0.007022017843898678
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Step Decay",
+      "formula": "step_decay",
+      "test_acc_mean": 0.9882,
+      "test_acc_std": 0.0,
+      "test_acc_max": 0.9882,
+      "val_acc_final_mean": 0.9884166666666667,
+      "train_loss_final_mean": 0.033742497640351456,
+      "lr_mean_final": 0.004499999999999999,
+      "lr_std_final": 8.673617379884035e-19,
+      "elapsed_mean_s": 31.696557998657227,
+      "per_seed": [
+        {
+          "seed": 42,
+          "test_acc": 0.9882,
+          "test_loss": 0.035611983108520505,
+          "elapsed_s": 31.696557998657227,
+          "norm_stats": null,
+          "epoch_history": [
+            {
+              "epoch": 1,
+              "train_loss": 0.2376300172333916,
+              "val_loss": 0.06503260081013043,
+              "val_acc": 0.98025,
+              "lr_mean": 0.04999999999999999,
+              "lr_std": 1.3877787807814457e-17
+            },
+            {
+              "epoch": 2,
+              "train_loss": 0.04658534157772859,
+              "val_loss": 0.04269172416130702,
+              "val_acc": 0.9870833333333333,
+              "lr_mean": 0.015000000000000003,
+              "lr_std": 3.469446951953614e-18
+            },
+            {
+              "epoch": 3,
+              "train_loss": 0.033742497640351456,
+              "val_loss": 0.04111739362279574,
+              "val_acc": 0.9884166666666667,
+              "lr_mean": 0.004499999999999999,
+              "lr_std": 8.673617379884035e-19
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Constant LR",
+      "formula": "constant_lr",
+      "test_acc_mean": 0.983,
+      "test_acc_std": 0.0,
+      "test_acc_max": 0.983,
+      "val_acc_final_mean": 0.98075,
+      "train_loss_final_mean": 0.06050231551627318,
+      "lr_mean_final": 0.010000000000000005,
+      "lr_std_final": 3.469446951953614e-18,
+      "elapsed_mean_s": 31.331720113754272,
+      "per_seed": [
+        {
+          "seed": 42,
+          "test_acc": 0.983,
+          "test_loss": 0.051899472379684446,
+          "elapsed_s": 31.331720113754272,
+          "norm_stats": null,
+          "epoch_history": [
+            {
+              "epoch": 1,
+              "train_loss": 0.3539788611580928,
+              "val_loss": 0.09975542958577474,
+              "val_acc": 0.9704166666666667,
+              "lr_mean": 0.010000000000000005,
+              "lr_std": 3.469446951953614e-18
+            },
+            {
+              "epoch": 2,
+              "train_loss": 0.07989171479394039,
+              "val_loss": 0.08480222400029501,
+              "val_acc": 0.9735833333333334,
+              "lr_mean": 0.010000000000000005,
+              "lr_std": 3.469446951953614e-18
+            },
+            {
+              "epoch": 3,
+              "train_loss": 0.06050231551627318,
+              "val_loss": 0.05957979947328568,
+              "val_acc": 0.98075,
+              "lr_mean": 0.010000000000000005,
+              "lr_std": 3.469446951953614e-18
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "ranking": [
+    "Cosine Annealing",
+    "1-Cycle",
+    "Step Decay",
+    "SymboLR (discovered)",
+    "Constant LR"
+  ]
+}
