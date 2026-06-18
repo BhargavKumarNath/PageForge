@@ -67,42 +67,42 @@ export default function LifecycleChart({ data, naiveMB, peakVRAM, peakPct }: Pro
   return (
     <div>
       {/* Stats row */}
-      <div className="grid grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 xs:gap-3 sm:gap-4 mb-4 xs:mb-6">
         {[
           { label: "Naive VRAM (8 seqs)",  value: `${naiveMB} MB`,   color: "text-rose-400"    },
           { label: "PageForge peak (B1)",  value: `${peakVRAM} MB`,  color: "text-emerald-400" },
           { label: "% of naive budget",    value: `${peakPct}%`,     color: "text-sky-400"     },
           { label: "Pages after free()",   value: "0",               color: "text-emerald-400" },
         ].map(({ label, value, color }) => (
-          <div key={label} className="bg-zinc-900/50 rounded-xl px-4 py-3">
-            <p className="label-tag mb-1.5">{label}</p>
-            <p className={`text-2xl font-light tabular-nums ${color}`}>{value}</p>
+          <div key={label} className="bg-zinc-900/50 rounded-xl px-2.5 xs:px-4 py-2 xs:py-3">
+            <p className="label-tag text-[8px] xs:text-[10px] mb-1">{label}</p>
+            <p className={`text-xl xs:text-2xl font-light tabular-nums ${color}`}>{value}</p>
           </div>
         ))}
       </div>
 
       {/* Legend */}
-      <div className="flex flex-wrap items-center gap-x-5 gap-y-2 mb-4">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-0.5 bg-emerald-400" />
-          <span className="text-xs text-zinc-400">Batch 1: initial allocation</span>
+      <div className="flex flex-wrap items-center gap-x-3 xs:gap-x-5 gap-y-1.5 xs:gap-y-2 mb-3 xs:mb-4">
+        <div className="flex items-center gap-1.5 xs:gap-2 min-w-0">
+          <div className="w-8 h-0.5 bg-emerald-400 shrink-0" />
+          <span className="text-[10px] xs:text-xs text-zinc-400">Batch 1: initial allocation</span>
         </div>
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-0.5 bg-sky-400" />
-          <span className="text-xs text-zinc-400">Batch 2: same pages reused</span>
+        <div className="flex items-center gap-1.5 xs:gap-2 min-w-0">
+          <div className="w-8 h-0.5 bg-sky-400 shrink-0" />
+          <span className="text-[10px] xs:text-xs text-zinc-400">Batch 2: same pages reused</span>
         </div>
-        <div className="flex items-center gap-2">
-          <div className="w-2 h-2 rounded-full bg-amber-400/60" />
-          <span className="text-xs text-zinc-400">free() called</span>
+        <div className="flex items-center gap-1.5 xs:gap-2 min-w-0">
+          <div className="w-2 h-2 rounded-full bg-amber-400/60 shrink-0" />
+          <span className="text-[10px] xs:text-xs text-zinc-400">free() called</span>
         </div>
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-0.5 border-t border-dashed border-rose-400/50" />
-          <span className="text-xs text-zinc-400">Naive budget: {naiveMB} MB (off-scale)</span>
+        <div className="flex items-center gap-1.5 xs:gap-2 min-w-0">
+          <div className="w-8 h-0.5 border-t border-dashed border-rose-400/50 shrink-0" />
+          <span className="text-[10px] xs:text-xs text-zinc-400">Naive budget: {naiveMB} MB</span>
         </div>
       </div>
 
-      <ResponsiveContainer width="100%" height={240}>
-        <AreaChart data={data} margin={{ top: 8, right: 8, bottom: 4, left: 0 }}>
+      <ResponsiveContainer width="100%" height={220}>
+        <AreaChart data={data} margin={{ top: 8, right: 8, bottom: 4, left: 40 }}>
           <defs>
             <linearGradient id="lcGrad1" x1="0" y1="0" x2="0" y2="1">
               <stop offset="0%"   stopColor="#34d399" stopOpacity={0.35} />
@@ -132,7 +132,7 @@ export default function LifecycleChart({ data, naiveMB, peakVRAM, peakPct }: Pro
             tick={{ fill: "#52525b", fontSize: 10 }}
             axisLine={false}
             tickLine={false}
-            width={52}
+            width={40}
             tickFormatter={v => `${v.toFixed(0)}%`}
             domain={[0, 12]}
           />
@@ -176,7 +176,7 @@ export default function LifecycleChart({ data, naiveMB, peakVRAM, peakPct }: Pro
         </AreaChart>
       </ResponsiveContainer>
 
-      <p className="text-center text-[11px] text-zinc-600 mt-3">
+      <p className="text-center text-[10px] xs:text-[11px] text-zinc-600 mt-2 xs:mt-3">
         Batch 2 reuses the exact same physical pages freed by Batch 1. Pool never grows, zero fragmentation.
       </p>
     </div>

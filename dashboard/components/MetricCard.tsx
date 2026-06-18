@@ -69,27 +69,27 @@ export default function MetricCard({
     : Minus;
 
   return (
-    <div className="glass-card p-5 flex flex-col gap-3 hover:border-zinc-700/60 transition-colors">
+    <div className="glass-card p-3 xs:p-4 sm:p-5 flex flex-col gap-2 xs:gap-3 hover:border-zinc-700/60 transition-colors">
 
       {/* Label */}
-      <p className="label-tag">{label}</p>
+      <p className="label-tag text-[8px] xs:text-[10px]">{label}</p>
 
       {/* Value row */}
-      <div className="flex items-end justify-between gap-2">
+      <div className="flex items-end justify-between gap-1.5 xs:gap-2">
         <span
-          className="text-4xl font-light tracking-tight text-zinc-100 leading-none"
+          className="text-2xl xs:text-3xl sm:text-4xl font-light tracking-tight text-zinc-100 leading-none"
           style={{ fontVariantNumeric: "tabular-nums" }}
         >
           {value}
         </span>
-        {spark && <MiniSparkline data={spark} color={accentColor} />}
+        {spark && <span className="hidden xs:block scale-75 xs:scale-100 origin-bottom-right"><MiniSparkline data={spark} color={accentColor} /></span>}
       </div>
 
       {/* Footer */}
-      <div className="flex items-center justify-between pt-1 border-t border-zinc-800/60">
-        <span className="text-xs text-zinc-500">{sub}</span>
-        <span className={`flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-full ${deltaStyle}`}>
-          <DeltaIcon className="w-3 h-3" />
+      <div className="flex flex-col xs:flex-row xs:items-center justify-between pt-1.5 xs:pt-2 border-t border-zinc-800/60 gap-1.5 xs:gap-2">
+        <span className="text-[10px] xs:text-[11px] text-zinc-500 leading-snug flex-1 min-w-0">{sub}</span>
+        <span className={`flex items-center gap-0.5 xs:gap-1 text-[9px] xs:text-[11px] font-medium px-1.5 xs:px-2 py-0.5 rounded-full shrink-0 ${deltaStyle}`}>
+          <DeltaIcon className="w-2.5 xs:w-3 h-2.5 xs:h-3 shrink-0" />
           {delta}
         </span>
       </div>

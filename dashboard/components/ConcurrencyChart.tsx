@@ -40,8 +40,8 @@ function CustomTooltip({ active, payload, label }: TooltipPayload) {
 
 export default function ConcurrencyChart({ data, naiveCap }: Props) {
   return (
-    <ResponsiveContainer width="100%" height={220}>
-      <ComposedChart data={data} margin={{ top: 4, right: 4, bottom: 4, left: -10 }}>
+    <ResponsiveContainer width="100%" height={200}>
+      <ComposedChart data={data} margin={{ top: 4, right: 8, bottom: 4, left: 30 }}>
         <defs>
           <linearGradient id="barGrad" x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%"   stopColor="#34d399" stopOpacity={0.8} />
@@ -63,7 +63,7 @@ export default function ConcurrencyChart({ data, naiveCap }: Props) {
           tick={{ fill: "#52525b", fontSize: 10 }}
           axisLine={false}
           tickLine={false}
-          width={36}
+          width={30}
         />
 
         <Tooltip content={<CustomTooltip />} cursor={{ fill: "rgba(255,255,255,0.03)" }} />

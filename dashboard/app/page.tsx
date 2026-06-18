@@ -84,29 +84,29 @@ const EXPLAINER = [
 
 export default function Page() {
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen overflow-x-hidden">
       <NavBar />
 
-      <main className="max-w-7xl mx-auto px-6 py-14 space-y-12">
+      <main className="max-w-7xl mx-auto px-3 xs:px-4 sm:px-6 py-6 xs:py-8 sm:py-14 space-y-6 xs:space-y-8 sm:space-y-12">
 
         {/* ── Hero ──────────────────────────────────────────────────── */}
         <section>
           <p className="label-tag mb-4">Paged KV-Cache Memory Manager</p>
-          <div className="flex flex-col md:flex-row md:items-start justify-between gap-8">
-            <div className="flex-1">
-              <h1 className="text-6xl font-light tracking-tight text-zinc-100 mb-4 leading-none">
+          <div className="flex flex-col md:flex-row md:items-start justify-between gap-6 md:gap-8">
+            <div className="flex-1 min-w-0">
+              <h1 className="text-3xl xs:text-4xl sm:text-5xl md:text-6xl font-light tracking-tight text-zinc-100 mb-3 xs:mb-4 leading-tight">
                 PageForge
               </h1>
-              <p className="text-lg text-zinc-400 font-light leading-relaxed max-w-xl mb-6">
+              <p className="text-sm xs:text-base sm:text-lg text-zinc-400 font-light leading-relaxed max-w-xl mb-4 xs:mb-6">
                 A from-scratch implementation of vLLM-style paged KV-cache attention in
                 Rust + CUDA. On-demand page allocation eliminates static VRAM waste,
                 enabling 8–32× more concurrent LLM inference sequences per GPU.
               </p>
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-1.5 xs:gap-2">
                 {TECH_BADGES.map(({ label, color }) => (
                   <span
                     key={label}
-                    className={`px-2.5 py-1 rounded-full text-[11px] font-medium border ${BADGE[color]}`}
+                    className={`px-2 xs:px-2.5 py-0.5 xs:py-1 rounded-full text-[10px] xs:text-[11px] font-medium border ${BADGE[color]}`}
                   >
                     {label}
                   </span>
@@ -115,16 +115,16 @@ export default function Page() {
             </div>
 
             {/* Hero stats */}
-            <div className="shrink-0 grid grid-cols-2 gap-3 md:w-[340px]">
+            <div className="grid grid-cols-2 gap-2 xs:gap-3 w-full md:w-[340px] md:shrink-0">
               {[
                 { val: "8–32×", sub: "more concurrent seqs / GB", color: "text-emerald-400" },
                 { val: "94%",   sub: "less active VRAM per seq",  color: "text-sky-400"     },
                 { val: "+33%",  sub: "P50 latency overhead",      color: "text-amber-400"   },
                 { val: "75/75", sub: "tests passing",             color: "text-violet-400"  },
               ].map(({ val, sub, color }) => (
-                <div key={sub} className="glass-card px-4 py-4">
-                  <p className={`text-3xl font-light tabular-nums ${color}`}>{val}</p>
-                  <p className="text-[11px] text-zinc-500 mt-1 leading-snug">{sub}</p>
+                <div key={sub} className="glass-card px-2.5 py-2.5 xs:px-3 xs:py-3 sm:px-4 sm:py-4">
+                  <p className={`text-xl xs:text-2xl sm:text-3xl font-light tabular-nums ${color}`}>{val}</p>
+                  <p className="text-[9px] xs:text-[10px] sm:text-[11px] text-zinc-500 mt-1 leading-snug">{sub}</p>
                 </div>
               ))}
             </div>
@@ -133,26 +133,26 @@ export default function Page() {
 
         {/* ── Problem / Solution / Result ───────────────────────────── */}
         <section>
-          <p className="label-tag mb-5">System Design</p>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <p className="label-tag mb-3 xs:mb-5">System Design</p>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 xs:gap-4">
             {EXPLAINER.map(card => (
               <div
                 key={card.step}
-                className={`glass-card p-5 border ${card.border} ${card.bg} flex flex-col gap-3`}
+                className={`glass-card p-3 xs:p-5 border ${card.border} ${card.bg} flex flex-col gap-2 xs:gap-3`}
               >
-                <div className="flex items-center justify-between">
-                  <span className="text-[10px] uppercase tracking-widest text-zinc-600">{card.label}</span>
-                  <span className="text-xs font-mono text-zinc-700">{card.step}</span>
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-[9px] xs:text-[10px] uppercase tracking-widest text-zinc-600">{card.label}</span>
+                  <span className="text-xs font-mono text-zinc-700 shrink-0">{card.step}</span>
                 </div>
-                <h3 className="text-sm font-semibold text-zinc-200 leading-snug">
+                <h3 className="text-xs xs:text-sm font-semibold text-zinc-200 leading-snug">
                   {card.heading}
                 </h3>
-                <p className="text-[12px] text-zinc-500 leading-relaxed flex-1">
+                <p className="text-[11px] xs:text-[12px] text-zinc-500 leading-relaxed flex-1">
                   {card.body}
                 </p>
-                <div className={`mt-1 px-3 py-2 rounded-lg bg-zinc-900/60 border ${card.border}`}>
-                  <p className={`text-base font-light tabular-nums ${card.statColor}`}>{card.stat}</p>
-                  <p className="text-[10px] text-zinc-600 mt-0.5">{card.statSub}</p>
+                <div className={`mt-1 px-2.5 xs:px-3 py-1.5 xs:py-2 rounded-lg bg-zinc-900/60 border ${card.border}`}>
+                  <p className={`text-sm xs:text-base font-light tabular-nums ${card.statColor}`}>{card.stat}</p>
+                  <p className="text-[9px] xs:text-[10px] text-zinc-600 mt-0.5">{card.statSub}</p>
                 </div>
               </div>
             ))}
@@ -160,7 +160,7 @@ export default function Page() {
         </section>
 
         {/* ── KPI Cards ─────────────────────────────────────────────── */}
-        <section className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <section className="grid grid-cols-2 md:grid-cols-4 gap-2 xs:gap-3 sm:gap-4">
           <MetricCard
             label="Concurrency Multiplier"
             value={`${kpis.concurrencyMultiplier}×`}
@@ -200,10 +200,10 @@ export default function Page() {
         </section>
 
         {/* ── Comparison Tables ─────────────────────────────────────── */}
-        <section className="glass-card p-6">
+        <section className="glass-card p-3 xs:p-4 sm:p-6">
           <p className="label-tag mb-1">At a Glance</p>
-          <h2 className="section-title mb-6">PageForge vs Alternatives</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <h2 className="section-title mb-4 xs:mb-6">PageForge vs Alternatives</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 xs:gap-6 sm:gap-8">
             <ComparisonTable
               title="Memory Efficiency"
               baseLabel="Naive Static"
@@ -220,38 +220,38 @@ export default function Page() {
         </section>
 
         {/* ── VRAM Efficiency Chart ─────────────────────────────────── */}
-        <section className="glass-card p-6">
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-6">
-            <div>
+        <section className="glass-card p-3 xs:p-4 sm:p-6">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-3 xs:gap-4 mb-4 xs:mb-6">
+            <div className="min-w-0">
               <p className="label-tag mb-1">Memory Efficiency</p>
               <h2 className="section-title">VRAM Consumption vs Decode Step</h2>
-              <p className="section-sub mt-1">
+              <p className="section-sub text-[10px] xs:text-xs mt-1">
                 32 concurrent sequences · GPT-2 124M · fp16 · Naive budget = 512 tokens / sequence (fixed)
               </p>
             </div>
             <div className="text-right shrink-0">
-              <p className="text-3xl font-light text-emerald-400">8.0×</p>
-              <p className="text-xs text-zinc-500">savings at step 50</p>
+              <p className="text-2xl xs:text-3xl font-light text-emerald-400">8.0×</p>
+              <p className="text-[10px] xs:text-xs text-zinc-500">savings at step 50</p>
             </div>
           </div>
           <VRAMChart data={vramSeries} />
         </section>
 
         {/* ── Concurrency + Latency ─────────────────────────────────── */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <section className="glass-card p-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 xs:gap-4">
+          <section className="glass-card p-3 xs:p-4 sm:p-6">
             <p className="label-tag mb-1">Concurrency</p>
             <h2 className="section-title mb-0.5">Max Concurrent Sequences</h2>
-            <p className="section-sub mb-5">
+            <p className="section-sub text-[10px] xs:text-xs mb-3 xs:mb-5">
               512-page pool · page_size=16 · prompt ≈ 10 tokens · shows PageForge advantage degrades as seqs grow
             </p>
             <ConcurrencyChart data={concurrencySeries} naiveCap={NAIVE_CAP} />
           </section>
 
-          <section className="glass-card p-6">
+          <section className="glass-card p-3 xs:p-4 sm:p-6">
             <p className="label-tag mb-1">Latency Analysis</p>
             <h2 className="section-title mb-0.5">Decode Step Latency</h2>
-            <p className="section-sub mb-5">
+            <p className="section-sub text-[10px] xs:text-xs mb-3 xs:mb-5">
               50 iterations · 5 warmup · RTX 4070 Laptop · prompt: "The quick brown fox…"
             </p>
             <LatencyChart
@@ -264,17 +264,17 @@ export default function Page() {
         </div>
 
         {/* ── Pool Lifecycle ────────────────────────────────────────── */}
-        <section className="glass-card p-6">
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-6">
-            <div>
+        <section className="glass-card p-3 xs:p-4 sm:p-6">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-3 xs:gap-4 mb-4 xs:mb-6">
+            <div className="min-w-0">
               <p className="label-tag mb-1">Pool Lifecycle</p>
               <h2 className="section-title">Sequential Batch Reuse</h2>
-              <p className="section-sub mt-1">
+              <p className="section-sub text-[10px] xs:text-xs mt-1">
                 8 concurrent seqs · 30 decode steps · free() at step 30 · Batch 2 reuses exact same pages
               </p>
             </div>
-            <div className="flex items-center gap-1.5 text-xs text-emerald-400 shrink-0">
-              <CheckCircle className="w-4 h-4" />
+            <div className="flex items-center gap-1 xs:gap-1.5 text-[10px] xs:text-xs text-emerald-400 shrink-0">
+              <CheckCircle className="w-3 xs:w-4 h-3 xs:h-4 shrink-0" />
               <span className="font-medium">Zero fragmentation verified</span>
             </div>
           </div>
@@ -287,35 +287,35 @@ export default function Page() {
         </section>
 
         {/* ── Architecture + System Specs ───────────────────────────── */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 xs:gap-4">
           <ArchitectureCard />
           <SystemSpecs specs={systemSpecs} stress={stressResult} />
         </div>
 
         {/* ── Roadmap ───────────────────────────────────────────────── */}
-        <section className="glass-card p-6">
+        <section className="glass-card p-3 xs:p-4 sm:p-6">
           <p className="label-tag mb-1">Engineering Roadmap</p>
-          <h2 className="section-title mb-6">Planned Optimisations</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <h2 className="section-title mb-4 xs:mb-6">Planned Optimisations</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 xs:gap-3 sm:gap-4">
             {roadmap.map((item, i) => (
               <div
                 key={item.title}
-                className="flex gap-4 px-4 py-4 rounded-xl bg-zinc-900/50 border border-zinc-800/60"
+                className="flex gap-2 xs:gap-3 sm:gap-4 px-2.5 xs:px-4 py-2.5 xs:py-4 rounded-xl bg-zinc-900/50 border border-zinc-800/60"
               >
-                <span className="text-xs font-mono text-zinc-700 shrink-0 mt-0.5">
+                <span className="text-[9px] xs:text-xs font-mono text-zinc-700 shrink-0 mt-0.5">
                   {String(i + 1).padStart(2, "0")}
                 </span>
-                <div>
-                  <p className="text-sm font-semibold text-zinc-200 mb-1">{item.title}</p>
-                  <p className="text-xs text-zinc-500 leading-relaxed">{item.detail}</p>
+                <div className="min-w-0">
+                  <p className="text-xs xs:text-sm font-semibold text-zinc-200 mb-0.5 xs:mb-1">{item.title}</p>
+                  <p className="text-[10px] xs:text-xs text-zinc-500 leading-relaxed">{item.detail}</p>
                 </div>
-                <span className="text-[10px] px-2 py-0.5 rounded-full border border-zinc-700 text-zinc-600 self-start shrink-0">
+                <span className="text-[8px] xs:text-[10px] px-1.5 xs:px-2 py-0.5 rounded-full border border-zinc-700 text-zinc-600 self-start shrink-0 whitespace-nowrap">
                   {item.status}
                 </span>
               </div>
             ))}
           </div>
-          <p className="text-[11px] text-zinc-600 mt-4 leading-relaxed">
+          <p className="text-[10px] xs:text-[11px] text-zinc-600 mt-3 xs:mt-4 leading-relaxed">
             Inspired by vLLM PagedAttention (Kwon et al., 2023). This implementation demonstrates the
             core paging mechanism from first principles: Rust allocator, hand-written CUDA scatter/gather
             kernels, and a DLPack zero-copy bridge to PyTorch.
@@ -325,20 +325,20 @@ export default function Page() {
       </main>
 
       {/* ── Footer ──────────────────────────────────────────────────── */}
-      <footer className="border-t border-zinc-800/50 mt-8 py-8">
-        <div className="max-w-7xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-            <span className="text-xs text-zinc-600">PageForge v0.1.0</span>
-            <span className="text-zinc-800">·</span>
-            <span className="text-xs text-zinc-600">RTX 4070 Laptop · sm_89 · CUDA 12.8</span>
-            <span className="text-zinc-800">·</span>
-            <span className="text-xs text-zinc-600">Hardware-verified benchmarks · GPT-2 124M fp16</span>
+      <footer className="border-t border-zinc-800/50 mt-6 xs:mt-8 py-4 xs:py-6 sm:py-8">
+        <div className="max-w-7xl mx-auto px-3 xs:px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-2 xs:gap-3 text-center sm:text-left">
+          <div className="flex flex-wrap justify-center sm:justify-start items-center gap-x-2 xs:gap-x-3 gap-y-1 text-[10px] xs:text-xs">
+            <span className="text-zinc-600">PageForge v0.1.0</span>
+            <span className="text-zinc-800 hidden sm:inline">·</span>
+            <span className="text-zinc-600 hidden xs:inline">RTX 4070 Laptop · sm_89 · CUDA 12.8</span>
+            <span className="text-zinc-800 hidden sm:inline">·</span>
+            <span className="text-zinc-600 hidden sm:inline">Hardware-verified benchmarks · GPT-2 124M fp16</span>
           </div>
           <a
             href="https://github.com/BhargavKumarNath/PageForge"
             target="_blank"
             rel="noreferrer"
-            className="text-xs text-zinc-500 hover:text-zinc-300 transition-colors shrink-0"
+            className="text-[10px] xs:text-xs text-zinc-500 hover:text-zinc-300 transition-colors shrink-0"
           >
             Source on GitHub →
           </a>

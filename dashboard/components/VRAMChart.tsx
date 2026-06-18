@@ -41,19 +41,19 @@ export default function VRAMChart({ data }: Props) {
   return (
     <div>
       {/* Legend */}
-      <div className="flex items-center gap-6 mb-4">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-0.5 border-t-2 border-dashed border-rose-400/70" />
-          <span className="text-xs text-zinc-400">Naive pre-alloc (max 512 tokens)</span>
+      <div className="flex flex-col xs:flex-row xs:items-center gap-3 xs:gap-6 mb-3 xs:mb-4">
+        <div className="flex items-center gap-2 min-w-0">
+          <div className="w-8 h-0.5 border-t-2 border-dashed border-rose-400/70 shrink-0" />
+          <span className="text-[10px] xs:text-xs text-zinc-400">Naive pre-alloc (max 512 tokens)</span>
         </div>
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-0.5 bg-emerald-400" />
-          <span className="text-xs text-zinc-400">PageForge paged</span>
+        <div className="flex items-center gap-2 min-w-0">
+          <div className="w-8 h-0.5 bg-emerald-400 shrink-0" />
+          <span className="text-[10px] xs:text-xs text-zinc-400">PageForge paged</span>
         </div>
       </div>
 
-      <ResponsiveContainer width="100%" height={300}>
-        <ComposedChart data={data} margin={{ top: 4, right: 4, bottom: 4, left: 0 }}>
+      <ResponsiveContainer width="100%" height={240}>
+        <ComposedChart data={data} margin={{ top: 4, right: 8, bottom: 4, left: 40 }}>
           <defs>
             <linearGradient id="pagedAreaGrad" x1="0" y1="0" x2="0" y2="1">
               <stop offset="0%"   stopColor="#34d399" stopOpacity={0.35} />
@@ -87,11 +87,11 @@ export default function VRAMChart({ data }: Props) {
           />
 
           <YAxis
-            tick={{ fill: "#52525b", fontSize: 11 }}
+            tick={{ fill: "#52525b", fontSize: 10 }}
             axisLine={false}
             tickLine={false}
-            tickFormatter={v => `${v} MB`}
-            width={68}
+            tickFormatter={v => `${v}MB`}
+            width={40}
           />
 
           <Tooltip content={<CustomTooltip />} cursor={{ stroke: "rgba(255,255,255,0.07)", strokeWidth: 1 }} />
