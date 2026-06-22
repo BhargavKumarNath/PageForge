@@ -12,9 +12,11 @@
 
 **[→ View Live Dashboard](https://page-forge-five.vercel.app/)**
 
-**Paged KV-cache memory manager for LLM inference — Rust + CUDA + Python.**
+**Paged KV-cache memory manager for LLM inference (Rust + CUDA + Python).**
 
-PageForge reimplements the core memory innovation from [vLLM's PagedAttention](https://arxiv.org/abs/2309.06180) from scratch: instead of pre-allocating a fixed KV-cache tensor for `max_seq_len` tokens at sequence start, it allocates fixed-size *pages* on demand. Only tokens that exist consume VRAM. The result is **8-32× more concurrent sequences** on the same GPU, with near-zero fragmentation and O(1) page alloc/free.
+A from-scratch implementation of the core idea behind [vLLM's PagedAttention](https://arxiv.org/abs/2309.06180): instead of reserving a fixed KV-cache tensor for `max_seq_len` tokens upfront, allocate *pages* on demand as tokens are actually generated. Only tokens that exist consume VRAM. At 32 concurrent sequences on GPT-2, that's the difference between **603 MB and 75 MB** at decode step 50.
+
+> **Note:** This repo contains the dashboard and docs. The core source (Rust allocator, CUDA kernels, Python package) was built locally and isn't tracked here. All benchmark numbers are from actual runs on an RTX 4070 Laptop.
 
 ```
 GPT-2 124M · fp16 · RTX 4070 Laptop · decode step 50
@@ -26,15 +28,25 @@ GPT-2 124M · fp16 · RTX 4070 Laptop · decode step 50
 
 ---
 
+## Project History
+
+This repo started as **SymboLR**, a genetic programming engine in Rust that used MAP-Elites search to evolve symbolic learning rate formulas of the form `lr = f(t, g, Δl)`. The idea was let a GP system discover adaptive LR schedules that outperform hand-tuned ones. I built it out over several weeks (PyO3 FFI, `vmap`-batched gradient evaluation, 107 passing tests).
+
+Then I ran it on real tasks. The GP found formulas fine, but they were gaming the proxy: the synthetic training tasks were easy enough that any LR in `[0.01, 10.0]` worked, so the system just picked high-LR formulas that converged fast on proxies and fell apart on real training runs. The proxy-to-real transfer gap was real and I couldn't close it without essentially solving the original problem.
+
+So I pivoted. Same stack (Rust, CUDA, PyTorch, PyO3), different problem, one with ground-truth results I can measure on actual hardware. That became **PageForge**.
+
+---
+
 ## Problem
 
-Standard HuggingFace KV-cache allocates a full contiguous tensor per sequence at the first forward pass:
+HuggingFace's default KV-cache allocates one big contiguous tensor per sequence at the first forward pass:
 
 ```
 shape = (batch, n_layers, 2, n_heads, max_seq_len, d_head)
 ```
 
-For GPT-2 with `max_seq_len=512`: each sequence reserves **18.9 MB** of K+V VRAM regardless of generation length. A request that generates 60 tokens holds a 512-token slot. At 32 concurrent sequences, 90%+ of allocated VRAM is idle before decode step 100. This is the primary GPU memory bottleneck in LLM serving.
+For GPT-2 with `max_seq_len=512`, that's **18.9 MB per sequence**, reserved at token 1, whether the sequence generates 10 tokens or 500. A request that outputs 60 tokens still holds a 512-token slot for its entire lifetime. At 32 concurrent sequences, you're burning through 600+ MB of VRAM while 90% of it sits empty. That's the bottleneck.
 
 ```
 KV bytes per token (GPT-2 124M):
@@ -47,7 +59,7 @@ At seq_len=59 (decode step 50):  2.36 MB/sequence with paged allocation
 
 ## Solution
 
-PageForge maintains a fixed GPU memory pool divided into uniform pages (`page_size=16` tokens each). The Rust allocator tracks a free-list and a per-sequence block table. Pages are assigned on demand as new tokens are generated and returned instantly on `free()`.
+Keep a fixed pool of uniform pages (`page_size=16` tokens each) on the GPU. The Rust allocator holds a free-list and a per-sequence block table. When a sequence needs more memory, it gets the next free page. When it finishes, those pages go straight back to the pool for whoever needs them next.
 
 ```
 Sequence starts:   alloc_for_seq(seq_id=0, n_pages=1)  → [page_3]
@@ -56,7 +68,7 @@ Sequence ends:     free_seq(seq_id=0)                  → pages [3, 7] back to 
 Next sequence:     alloc_for_seq(seq_id=1, n_pages=1)  → [page_3]   ← reuse
 ```
 
-Pages are non-contiguous in physical memory; CuPy CUDA kernels handle gather (scattered pages → contiguous buffer for attention) and scatter (new tokens → pages) at memory-bandwidth speeds (157-227 GB/s on sm_89).
+Pages are non-contiguous in physical memory, so CuPy CUDA kernels handle the gather (scattered pages into a contiguous buffer for attention) and scatter (new tokens back into pages) on every decode step. Measured at 157-227 GB/s on sm_89.
 
 ---
 
@@ -77,14 +89,14 @@ PagedPool (pageforge/pool.py)
             └── scatter_kv_layer(kv, page_ids, pool, tok_offset, layer_offset)
 
 Per-sequence PagedKVCache (pageforge/cache.py)
-    ├── Subclasses HuggingFace DynamicCache — drop-in for transformers
+    ├── Subclasses HuggingFace DynamicCache (drop-in for transformers)
     ├── _start_step():   2 gather kernel calls for all layers K and V
     └── _layer_update(): 1 scatter call + torch.cat(past, new)
 ```
 
 ### CUDA Kernels (`pageforge/kernels/kv_cache.py`)
 
-All kernels use CuPy `RawKernel` (NVRTC) — no MSVC dependency, no PyTorch C++ extension build.
+All kernels use CuPy `RawKernel` (NVRTC); no MSVC dependency, no PyTorch C++ extension build.
 
 | Kernel | Operation | Use |
 |--------|-----------|-----|
@@ -93,7 +105,7 @@ All kernels use CuPy `RawKernel` (NVRTC) — no MSVC dependency, no PyTorch C++ 
 | `scatter_kv_at_offset` | new tokens → pages at logical offset | decode write |
 | `scatter_kv_layer` | one layer → combined pool (head-offset aware) | decode write, all-layer pool |
 
-The combined-layer pool layout (`n_layers×n_heads` in one tensor) reduces gather calls per decode step from `2×n_layers` (24 for GPT-2) down to 2 — one for all K, one for all V.
+The combined-layer pool layout (`n_layers×n_heads` in one tensor) reduces gather calls per decode step from `2×n_layers` (24 for GPT-2) down to 2 (one for all K, one for all V).
 
 ### Rust Core (`pageforge-rs/`)
 
@@ -156,11 +168,11 @@ In a 512-page pool (~302 MB reserved K+V): supports 256 concurrent sequences at 
 | PageForge paged | 10.0 ms | 11.9 ms |
 | **Overhead** | **+33%** | **+16% P99** |
 
-P50 overhead comes from 24 Python scatter kernel dispatches per decode step (1 scatter per layer × 12 layers × K+V). Root cause: non-contiguous page layout requires 24 `scatter_kv_layer` calls + 24 `torch.cat` ops. A fused scatter-attention kernel would eliminate these dispatches — target ≤8 ms P50.
+The +33% P50 overhead is all Python dispatch: 24 `scatter_kv_layer` calls + 24 `torch.cat` ops per decode step (one per layer, times K and V). The math is right, the fusing isn't done yet. A single fused scatter-attention kernel would get this under 8 ms P50; that's the top roadmap item.
 
 ### Kernel Bandwidth
 
-`gather_kv` / `scatter_kv_layer`: **157-227 GB/s** on RTX 4070 Laptop (theoretical peak: ~250 GB/s). Purely memory-bound — no arithmetic bottleneck.
+`gather_kv` / `scatter_kv_layer`: **157-227 GB/s** on RTX 4070 Laptop (theoretical peak: ~250 GB/s). Purely memory-bound, no arithmetic bottleneck.
 
 ### Allocator Throughput
 
@@ -170,7 +182,7 @@ P50 overhead comes from 24 Python scatter kernel dispatches per decode step (1 s
 
 ## Tests
 
-**56 Python tests + 6 Rust unit tests — all passing.**
+**56 Python tests + 6 Rust unit tests, all passing.** The test suite lives in the local source build and isn't tracked in this repo.
 
 | File | Tests | Coverage |
 |------|-------|----------|
@@ -186,7 +198,20 @@ P50 overhead comes from 24 Python scatter kernel dispatches per decode step (1 s
 
 ## Setup
 
-### Requirements
+### Dashboard (this repo)
+
+```bash
+cd dashboard
+npm install
+npm run dev       # http://localhost:3000
+npm run build     # production build
+```
+
+The live dashboard is deployed at [page-forge-five.vercel.app](https://page-forge-five.vercel.app/).
+
+### Source Code Requirements (local build)
+
+The core source code is not tracked in this repository. To rebuild the full project from scratch:
 
 | Tool | Version |
 |------|---------|
@@ -195,28 +220,7 @@ P50 overhead comes from 24 Python scatter kernel dispatches per decode step (1 s
 | CUDA | 12.x (nvcc on PATH) |
 | GPU | Any CUDA-capable; tested on RTX 4070 Laptop (sm_89) |
 
-**Windows note:** `torch.utils.cpp_extension` is broken on MSVC 14.41 + PyTorch 2.11. All GPU code uses CuPy RawKernel (NVRTC), which compiles independently — this is by design.
-
-### Install
-
-```bash
-# 1. Build the Rust extension
-cd pageforge-rs
-maturin develop --release
-cd ..
-
-# 2. Install Python package
-pip install -e .
-
-# 3. Verify
-python -c "from _pageforge import PageForge; pf = PageForge(512, 16); print(pf)"
-
-# 4. Run tests
-pytest tests/ -v
-
-# 5. Run benchmarks
-python -m benchmarks.benchmark_week4
-```
+**Windows note:** `torch.utils.cpp_extension` is broken on MSVC 14.41 + PyTorch 2.11. All GPU code uses CuPy RawKernel (NVRTC), which compiles independently; this is by design.
 
 ### Dependencies
 
@@ -259,10 +263,10 @@ with torch.no_grad():
         next_tok = out.logits[:, -1, :].argmax(-1, keepdim=True)
 
 print(tok.decode(next_tok[0]))
-cache.free()  # O(1) — pages returned to pool
+cache.free()  # O(1) - pages returned to pool
 ```
 
-### Shared pool — multiple sequences
+### Shared pool: multiple sequences
 
 ```python
 from pageforge.pool import PagedPool
@@ -276,7 +280,7 @@ cache_b = PagedKVCache(pool=pool, seq_id=1)
 # ... run inference for A ...
 cache_a.free()  # pages returned to pool immediately
 
-# C reuses A's physical pages — no fragmentation
+# C reuses A's physical pages - no fragmentation
 cache_c = PagedKVCache(pool=pool, seq_id=2)
 ```
 
@@ -301,10 +305,74 @@ pageforge pool status --seqs 128   # project for 128 concurrent sequences
 pageforge pool stress --seqs 8 --cycles 100
 
 # Benchmarks
-pageforge bench vram       # VRAM vs decode step curves (saves PNG)
+pageforge bench vram       # VRAM vs decode step curves
 pageforge bench latency    # P50/P99 vs HF DynamicCache
 pageforge bench multi      # multi-sequence lifecycle
 ```
+
+### Demo commands (no GPU or Rust required)
+
+Three commands demonstrate the full system on any machine with only Python and PyTorch installed.
+
+#### `pageforge demo`
+
+Full-screen animated memory visualization. A 32x16 grid of 512 pages updates in real time as 8 color-coded sequences arrive, accumulate pages across decode steps, then free and reuse them. Live stats panel shows VRAM paged vs naive and pool utilization. Runs for ~10 seconds by default.
+
+```bash
+pageforge demo
+pageforge demo --seqs 8 --steps 150 --delay 0.15   # slower, longer
+```
+
+The animation shows the core property of paged attention directly: freed pages (gray) are immediately available to the next sequence, with zero fragmentation between batches.
+
+#### `pageforge pool simulate`
+
+Step-through table showing exact physical page IDs assigned to each sequence at every key decode step. Runs two consecutive batches to prove zero leaks and zero fragmentation across the full alloc/free/reuse cycle.
+
+```bash
+pageforge pool simulate
+pageforge pool simulate --seqs 4 --steps 60 --batches 2
+```
+
+Example output (abbreviated):
+
+```
+Batch 1  (seqs 0 - 3)
+ Step | Seq 0       | Seq 1       | Seq 2       | Seq 3       | Used | Free | VRAM
+    0 | [0]         | [1]         | [2]         | [3]         |    4 |  508 | 2.4 MB
+   10 | [0, 4]      | [1, 5]      | [2, 6]      | [3, 7]      |    8 |  504 | 4.7 MB
+   59 | [0, 4, 8..] | [1, 5, 9..] | [2, 6, 10.] | [3, 7, 11.] |   20 |  492 | 11.8 MB
+Batch 1 freed: 20 pages returned -- pool: 512/512 free
+
+Pool fully recovered: 512/512 pages free | Leaks: 0 | Peak VRAM: 11.8 MB vs naive 75.5 MB
+```
+
+#### `pageforge run --cpu`
+
+Real GPT-2 text generation on CPU (no GPU needed) with a live VRAM comparison panel that updates as each token is generated. Shows exactly how many pages PageForge would allocate at each decode step vs the naive pre-allocation baseline.
+
+```bash
+pageforge run "Memory management in operating systems involves allocating and" --cpu --steps 25
+pageforge run "The research team announced that their new system achieved" --cpu --steps 30
+pageforge run "It was the best of times, it was the worst of" --cpu --steps 25
+```
+
+A repetition penalty (default 1.3) is applied automatically to prevent greedy-decoding loops. Adjust with `--rep-penalty`:
+
+```bash
+pageforge run "The transformer architecture" --cpu --steps 30 --rep-penalty 1.5
+```
+
+Example VRAM output at step 25 (prompt length 9, page_size=16):
+
+```
+Cache              Tokens   Pages   VRAM       Usage
+Naive pre-alloc      512      32   18.9 MB   ████████████████████████████
+PageForge paged       34       3    1.8 MB   ██░░░░░░░░░░░░░░░░░░░░░░░░░░
+Savings                             17.1 MB   (10.7x)
+```
+
+The naive allocator reserves 512 tokens of VRAM at sequence start regardless of actual length. PageForge allocates only the pages that contain real tokens, releasing the rest to the pool for other sequences.
 
 ---
 
