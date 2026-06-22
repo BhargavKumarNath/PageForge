@@ -12,10 +12,7 @@ venv/
 env/
 
 # Rust build artifacts
-rust_core/target/
-
-# Data cache (downloaded datasets)
-data_cache/
+pageforge-rs/target/
 
 # IDE
 .vscode/
@@ -37,6 +34,7 @@ pnpm-debug.log*
 
 # Generated artifacts
 template.jsx
+
 # Agent configs
 .agents/
 
@@ -45,17 +43,16 @@ template.jsx
 htmlcov/
 .coverage
 
-# Project custom directories
-/results/
-/fonts/
-/symbolr.egg-info/
-
+# Local-only documents
 .claude/
 research_journal/
-.gitignore
 linkedin_post.md
 FORENSIC_ANALYSIS.md
 vLLM_paper.pdf
+
+# Dashboard build output
+dashboard/out/
+dashboard/.next/
 dashboard/RESPONSIVE_BREAKPOINTS.md
 dashboard/RESPONSIVENESS_FIXES.md
 dashboard/BEFORE_AFTER_ANALYSIS.md

@@ -3,28 +3,23 @@ requires = ["setuptools>=61.0.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "symbolr"
+name = "pageforge"
 version = "0.1.0"
-description = "SymboLR: Symbolic Learning Rate Discovery System"
-readme = "readme.md"
+description = "PageForge: Paged KV-cache memory manager for LLM inference — Rust + CUDA + Python"
+readme = "README.md"
 requires-python = ">=3.9"
 dependencies = [
-    "numpy>=1.24.0",
-    "scikit-learn>=1.3.0",
-    "scipy>=1.11.0",
-    "sympy>=1.12",
-    "streamlit>=1.28.0",
-    "altair>=5.0.0",
-    "pandas>=2.0.0",
-    "typer>=0.9.0",
-    "rich>=13.7.0",
-    "pyyaml>=6.0.1",
-    "matplotlib>=3.8.0"
+    "torch>=2.0",
+    "transformers>=5.0",
+    "cupy-cuda12x>=14.0",
+    "typer>=0.12",
+    "rich>=13.0",
+    "pydantic>=2.0",
+    "toml>=0.10",
 ]
 
 [project.scripts]
-symbolr = "cli.main:app"
+pageforge = "pageforge.cli:app"
 
 [tool.setuptools]
-packages = ["cli", "config", "data", "gp", "models", "optimiser", "ui"]
-py-modules = ["benchmark", "app"]
+packages = ["pageforge"]
