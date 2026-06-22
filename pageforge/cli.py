@@ -47,16 +47,12 @@ app.add_typer(config_app, name="config", help="Show or edit persistent configura
 
 console = Console()
 
-# ---------------------------------------------------------------------------
 # Demo constants
-# ---------------------------------------------------------------------------
 
 _SEQ_COLORS = ["red", "blue", "green3", "yellow", "magenta", "cyan", "orange3", "bright_blue"]
 _SEQ_LABELS = list("ABCDEFGH")
 
-# ---------------------------------------------------------------------------
 # Config helpers
-# ---------------------------------------------------------------------------
 
 CONFIG_PATH = Path.home() / ".pageforge" / "config.toml"
 
@@ -79,9 +75,7 @@ def _save_config(cfg: dict) -> None:
         toml.dump(cfg, f)
 
 
-# ---------------------------------------------------------------------------
 # Shared guards
-# ---------------------------------------------------------------------------
 
 def _try_import_pf():
     try:
@@ -118,10 +112,7 @@ def _ok(s: str = "OK")   -> str: return f"[green]{s}[/green]"
 def _warn(s: str)         -> str: return f"[yellow]{s}[/yellow]"
 def _err(s: str = "MISS") -> str: return f"[red]{s}[/red]"
 
-# ---------------------------------------------------------------------------
 # pageforge info
-# ---------------------------------------------------------------------------
-
 @app.command()
 def info() -> None:
     """Check system readiness: Python, PyTorch, CUDA, CuPy, Rust extension, GPU."""
@@ -184,10 +175,7 @@ def info() -> None:
     console.print(Panel(table, title="[bold]PageForge System Readiness[/bold]", border_style="cyan"))
     console.print()
 
-# ---------------------------------------------------------------------------
 # pageforge run  (GPU path + --cpu demo path)
-# ---------------------------------------------------------------------------
-
 def _apply_rep_penalty(logits, generated_ids, penalty: float) -> None:
     """Divide logits of already-seen tokens by penalty (in-place). Reduces looping."""
     if penalty == 1.0:
@@ -362,10 +350,7 @@ def run(
     cache.free()
     console.print(Panel(tok.decode(generated[0]), title="[bold]Generated[/bold]", border_style="green"))
 
-# ---------------------------------------------------------------------------
 # pageforge demo  (animated page grid -- no GPU or Rust required)
-# ---------------------------------------------------------------------------
-
 @app.command()
 def demo(
     seqs:      int   = typer.Option(8,    "--seqs",      help="Concurrent sequences to simulate"),
@@ -552,10 +537,7 @@ def demo(
     console.print(Panel(summary, title="[bold]Demo Complete[/bold]", border_style="cyan"))
     console.print()
 
-# ---------------------------------------------------------------------------
 # pageforge pool status
-# ---------------------------------------------------------------------------
-
 @pool_app.command(name="status")
 def pool_status(
     pages:     int = typer.Option(512, "--pages",     help="Total pool pages"),
@@ -603,10 +585,7 @@ def pool_status(
 
     console.print(Panel(table, title=title, border_style="cyan"))
 
-# ---------------------------------------------------------------------------
 # pageforge pool simulate  (step-through lifecycle, no GPU or Rust required)
-# ---------------------------------------------------------------------------
-
 @pool_app.command(name="simulate")
 def pool_simulate(
     seqs:      int = typer.Option(4,   "--seqs",      help="Sequences per batch"),
@@ -719,10 +698,7 @@ def pool_simulate(
     ))
     console.print()
 
-# ---------------------------------------------------------------------------
 # pageforge pool stress
-# ---------------------------------------------------------------------------
-
 @pool_app.command(name="stress")
 def pool_stress(
     seqs:          int = typer.Option(16,  "--seqs",          help="Sequences per cycle"),
@@ -762,10 +738,7 @@ def pool_stress(
 
     console.print(Panel(table, title="[bold]Stress Test Results[/bold]", border_style="green" if passed else "red"))
 
-# ---------------------------------------------------------------------------
 # pageforge bench vram / latency / multi
-# ---------------------------------------------------------------------------
-
 @bench_app.command(name="vram")
 def bench_vram(
     seqs:      int = typer.Option(32,  "--seqs",      help="Concurrent sequences"),
@@ -901,10 +874,7 @@ def bench_multi(
 
     console.print(Panel(table, title="[bold]Pool Lifecycle  (2 batches)[/bold]", border_style="green"))
 
-# ---------------------------------------------------------------------------
 # pageforge config show / set
-# ---------------------------------------------------------------------------
-
 @config_app.command(name="show")
 def config_show() -> None:
     """Print the current configuration."""
