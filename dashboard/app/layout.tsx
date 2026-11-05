@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
+import { kpis } from "@/lib/data";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -13,11 +14,11 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: "PageForge : Paged KV-Cache Memory Manager",
   description:
-    "System performance dashboard for PageForge: a paged KV-cache memory manager for LLM inference built on Rust, CUDA, and PyTorch. 8× more concurrent sequences per GB vs naive pre-allocation.",
+    `Measured dashboard for PageForge, a paged KV-cache for LLM inference built on Rust, CUDA and PyTorch: ${kpis.capacityRatio}× more GPT-2 sequences per KV budget than static pre-allocation, at +${kpis.latencyOverheadP50}% P50 decode latency.`,
   keywords: ["LLM inference", "KV-cache", "PagedAttention", "CUDA", "Rust", "vLLM"],
   openGraph: {
     title: "PageForge : Paged KV-Cache Memory Manager",
-    description: "8× more concurrent sequences per GB. 33% latency overhead. Built on Rust + CUDA.",
+    description: `${kpis.capacityRatio}× more sequences per KV budget, +${kpis.latencyOverheadP50}% P50 latency. Rust + CUDA.`,
     type: "website",
   },
 };

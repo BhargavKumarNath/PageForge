@@ -1,0 +1,26 @@
+[package]
+name = "pageforge-rs"
+version = "0.2.0"
+edition = "2021"
+rust-version = "1.80"
+description = "Page allocator and block table for PageForge's paged KV-cache"
+license = "MIT"
+publish = false
+
+[lib]
+name = "_pageforge"
+crate-type = ["cdylib", "rlib"]
+
+[features]
+# The allocator core has no Python dependency, so `cargo test` needs no
+# interpreter. maturin turns on `python` (see pyproject.toml) to build the
+# PyO3 bindings.
+default = []
+python = ["dep:pyo3"]
+
+[dependencies]
+pyo3 = { version = "0.25", optional = true, features = ["extension-module", "abi3-py39"] }
+
+[profile.release]
+lto = "thin"
+codegen-units = 1

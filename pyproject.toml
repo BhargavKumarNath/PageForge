@@ -5,13 +5,14 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "pageforge"
 version = "0.1.0"
-description = "PageForge: Paged KV-cache memory manager for LLM inference — Rust + CUDA + Python"
+description = "PageForge: paged KV-cache memory manager for LLM inference (Rust allocator, CUDA kernels, transformers cache)"
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 dependencies = [
     "torch>=2.0",
     "transformers>=5.0",
     "cupy-cuda12x>=14.0",
+    "pageforge-rs",
     "typer>=0.12",
     "rich>=13.0",
     "pydantic>=2.0",
@@ -21,5 +22,20 @@ dependencies = [
 [project.scripts]
 pageforge = "pageforge.cli:app"
 
+[project.optional-dependencies]
+dev = ["pytest>=8", "pytest-timeout>=2", "ruff>=0.6", "maturin>=1.5,<2"]
+
 [tool.setuptools]
-packages = ["pageforge"]
+packages = ["pageforge", "pageforge.kernels"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I"]
+# cli.py aligns assignments and table calls in columns on purpose.
+ignore = ["E221", "E241", "E272", "E203"]
+
+[tool.ruff.lint.per-file-ignores]
+"pageforge/cli.py" = ["E501", "I001"]

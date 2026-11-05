@@ -323,7 +323,7 @@ def run(
         return
 
     _require_pf()
-    torch = _require_gpu()
+    _require_gpu()
 
     from pageforge.pool  import PagedPool
     from pageforge.cache import PagedKVCache
@@ -333,7 +333,7 @@ def run(
     tok   = AutoTokenizer.from_pretrained(model)
     mdl   = GPT2LMHeadModel.from_pretrained(model).cuda().half().eval()
     ids   = tok(prompt, return_tensors="pt").input_ids.cuda()
-    pool  = PagedPool(n_pages=pages, page_size=page_size)
+    pool  = PagedPool.for_model(mdl.config, n_pages=pages, page_size=page_size)
     cache = PagedKVCache(pool=pool, seq_id=0)
 
     import torch as _t
@@ -597,7 +597,7 @@ def pool_simulate(
     """Step-through pool lifecycle: exact page assignments + reuse across batches.
 
     [bold cyan]No GPU or Rust required.[/bold cyan] Shows which physical pages each
-    sequence owns at key decode steps, then proves zero fragmentation between batches.
+    sequence owns at key decode steps, then checks the pool is fully free between batches.
     """
     MB_PER_PAGE = page_size * 12 * 12 * 64 * 2 * 2 / 1e6
     PROMPT_LEN  = 8
@@ -815,7 +815,7 @@ def bench_latency(
 
     console.print("[cyan]Measuring HF DynamicCache...[/cyan]")
     hf_t = _measure(DynamicCache)
-    pool  = PagedPool(n_pages=pages, page_size=page_size)
+    pool  = PagedPool.for_model(mdl.config, n_pages=pages, page_size=page_size)
     console.print("[cyan]Measuring PageForge PagedKVCache...[/cyan]")
     pf_t = _measure(lambda: PagedKVCache(pool=pool, seq_id=0))
 
@@ -829,7 +829,7 @@ def bench_latency(
     table.add_row("PageForge Paged", f"{_pct(pf_t, .50):.1f}", f"{_pct(pf_t, .99):.1f}")
     color = "red" if overhead > 0 else "green"
     table.add_row("[dim]Overhead[/dim]",
-                  f"[{color}]{overhead:+.0f}%[/{color}]  (root: 24 scatter dispatches/step)", "")
+                  f"[{color}]{overhead:+.0f}%[/{color}]", "")
 
     console.print(Panel(table, title="[bold]Decode Latency[/bold]", border_style="cyan"))
 
@@ -841,7 +841,7 @@ def bench_multi(
     pages:     int = typer.Option(512, "--pages",     help="Pool pages"),
     page_size: int = typer.Option(16,  "--page-size", help="Tokens per page"),
 ) -> None:
-    """Multi-sequence pool lifecycle: two consecutive batches, zero fragmentation."""
+    """Multi-sequence pool lifecycle: two consecutive batches, pool fully recovered in between."""
     pf_mod = _require_pf()
     MB_PER_PAGE = page_size * 12 * 12 * 64 * 2 * 2 / 1e6
     pf     = pf_mod.PageForge(pages, page_size)
@@ -869,7 +869,7 @@ def bench_multi(
         for s in range(seqs):
             pf.free_seq((batch - 1) * seqs + s)
         free = pf.free_pages()
-        table.add_row(str((batch - 1) * 31 + 30), f"[yellow]free()[/yellow]",
+        table.add_row(str((batch - 1) * 31 + 30), "[yellow]free()[/yellow]",
                       "0", "0.00", f"[green]0.0% ({free}/{pages} free)[/green]")
 
     console.print(Panel(table, title="[bold]Pool Lifecycle  (2 batches)[/bold]", border_style="green"))
@@ -927,3 +927,7 @@ def config_set(
     console.print(f"[green]Set[/green] [bold]{key}[/bold] = [cyan]{node[leaf]}[/cyan]  "
                   f"[dim](was: {old})[/dim]")
     console.print(f"[dim]Saved: {CONFIG_PATH}[/dim]")
+
+
+if __name__ == "__main__":
+    app()

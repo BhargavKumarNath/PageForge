@@ -15,13 +15,13 @@ const layers: Layer[] = [
   {
     name:   "Rust PageForge",
     tech:   "PyO3 · maturin",
-    detail: "PageAllocator: O(1) VecDeque free-list · BlockTable: HashMap<seq_id, Vec<page_id>>",
+    detail: "PageAllocator: VecDeque free list, O(1) per page · BlockTable: HashMap<seq_id, Vec<page_id>>",
     color:  "#fb7185",
   },
   {
     name:   "CUDA Kernels",
     tech:   "CuPy RawKernel (nvrtc)",
-    detail: "gather_kv · scatter_kv_layer, 100-200 GB/s on sm_89",
+    detail: "GATHER_SCATTER_DETAIL",
     color:  "#34d399",
   },
   {
@@ -38,7 +38,14 @@ const flow = [
   { from: "CUDA",    to: "Pool",  label: "non-contiguous ↔ contiguous" },
 ];
 
-export default function ArchitectureCard() {
+interface Props { gatherGBs: number; scatterGBs: number; copyGBs: number }
+
+export default function ArchitectureCard({ gatherGBs, scatterGBs, copyGBs }: Props) {
+  const shown = layers.map(l =>
+    l.detail === "GATHER_SCATTER_DETAIL"
+      ? { ...l, detail: `gather ${gatherGBs} GB/s (device copy: ${copyGBs}) · per-layer scatter ${scatterGBs} GB/s` }
+      : l,
+  );
   return (
     <div className="glass-card p-3 xs:p-4 sm:p-6 h-full flex flex-col">
       <p className="label-tag mb-1">System Architecture</p>
@@ -46,7 +53,7 @@ export default function ArchitectureCard() {
 
       {/* Layer stack */}
       <div className="flex-1 space-y-1.5 xs:space-y-2">
-        {layers.map((layer, i) => (
+        {shown.map((layer, i) => (
           <div key={layer.name} className="relative">
             <div
               className="rounded-xl px-2.5 xs:px-4 py-2 xs:py-3 border transition-colors"
@@ -95,7 +102,7 @@ export default function ArchitectureCard() {
         <p className="text-[9px] xs:text-[10px] text-zinc-500 leading-snug">
           <span className="text-zinc-400 font-medium">DLPack bridge</span>
           {" "}zero-copy PyTorch ↔ CuPy tensor interop on each decode step.
-          No host round-trips. Verified bit-exact vs HF DynamicCache (max diff = 0.0).
+          No host round-trips. Logits bit-identical to HF DynamicCache (max diff 0.0, 4 prompts x 50 steps).
         </p>
       </div>
     </div>

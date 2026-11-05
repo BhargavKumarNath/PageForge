@@ -1,6 +1,7 @@
 "use client";
 
 import { Github, ExternalLink } from "lucide-react";
+import { testCounts } from "@/lib/data";
 
 export default function NavBar() {
   return (
@@ -25,7 +26,7 @@ export default function NavBar() {
             { label: "RTX 4070 Laptop", accent: false },
             { label: "GPT-2 124M",      accent: false },
             { label: "fp16",            accent: false },
-            { label: "75 / 75 tests",   accent: true  },
+            { label: `${testCounts.passed} / ${testCounts.total} tests`, accent: true },
           ].map(({ label, accent }) => (
             <span
               key={label}

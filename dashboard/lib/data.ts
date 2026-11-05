@@ -1,10 +1,22 @@
 /**
- * PageForge benchmark data — hardware-verified on RTX 4070 Laptop (Ada Lovelace, sm_89).
- * All numbers sourced from actual pytest/CLI benchmark runs, not estimates.
+ * PageForge dashboard data.
  *
- * Model:  GPT-2 124M  |  fp16  |  CUDA 12.8  |  PyTorch 2.11
- * Pool:   N_PAGES=512, PAGE_SIZE=16, n_layers=12, n_heads=12, d_head=64
+ * Measured values are imported from ./measured/*.json, which
+ * benchmarks/run_benchmarks.py, benchmarks/record_tests.py and
+ * benchmarks/profile_decode.py write on every run. Nothing measured is typed
+ * in by hand here. The step-by-step curves (VRAM, concurrency, lifecycle) are
+ * page arithmetic: the exact number of pages the allocator hands out for a
+ * given sequence length. Their step-50 points are checked against the
+ * measured run.
+ *
+ * Model: GPT-2 124M  |  fp16  |  Pool: 512 pages x 16 tokens, 12 layers x 12 heads x 64
  */
+
+import results from "./measured/results.json";
+import tests from "./measured/tests.json";
+import profile from "./measured/profile.json";
+
+const round = (x: number, d = 1) => Number(x.toFixed(d));
 
 // ---------------------------------------------------------------------------
 // Physical constants
@@ -15,7 +27,8 @@ export const PAGE_SIZE   = 16;  // tokens per page
 export const N_LAYERS    = 12;
 export const N_HEADS     = 12;
 export const D_HEAD      = 64;
-export const MAX_SEQ_LEN = 512; // naive pre-alloc budget per sequence
+export const MAX_SEQ_LEN = 512; // static pre-alloc budget per sequence
+export const PROMPT_TOKENS = 9; // "The quick brown fox jumps over the lazy dog" in GPT-2 tokens
 
 /** Bytes per page: fp16 K+V, all layers stacked in combined pool tensor */
 const BYTES_PER_PAGE = PAGE_SIZE * N_LAYERS * N_HEADS * D_HEAD * 2 * 2;
@@ -31,7 +44,7 @@ function naiveMB(nSeqs: number): number {
 
 // ---------------------------------------------------------------------------
 // VRAM efficiency series  (32 concurrent seqs, steps 0–200)
-// Verified: bench vram --steps 200 --seqs 32
+// Page arithmetic. Step 50 matches the measured run (results.memory).
 // ---------------------------------------------------------------------------
 
 export interface VRAMPoint {
@@ -48,7 +61,7 @@ const NAIVE_MB   = naiveMB(BENCH_SEQS); // 604.0 MB
 export const vramSeries: VRAMPoint[] = [
   0, 5, 10, 15, 20, 25, 30, 40, 50, 60, 75, 100, 125, 150, 175, 200,
 ].map(step => {
-  const tokens = 10 + step;
+  const tokens = PROMPT_TOKENS + step;
   const paged  = pagedMB(tokens, BENCH_SEQS);
   return {
     step,
@@ -61,13 +74,14 @@ export const vramSeries: VRAMPoint[] = [
 
 // ---------------------------------------------------------------------------
 // Concurrency multiplier  (512-page pool, steps 5–500)
-// Verified: pool status output at various decode steps
+// Page arithmetic: floor(pool pages / pages per sequence). Step 50 (128 seqs) matches
+// the measured capacity run, which admitted sequences until the allocator ran out.
 // ---------------------------------------------------------------------------
 
 export interface ConcurrencyPoint {
   step:       number;
   paged:      number; // max concurrent seqs in pool
-  naive:      number; // always 16 for a 512-page pool with max=512 pre-alloc
+  naive:      number; // 16 for a 512-page pool with max=512 pre-alloc (15 measured, see capacity)
   multiplier: number;
 }
 
@@ -76,14 +90,13 @@ export const NAIVE_CAP = Math.floor(POOL_PAGES / Math.ceil(MAX_SEQ_LEN / PAGE_SI
 export const concurrencySeries: ConcurrencyPoint[] = [
   5, 10, 20, 30, 40, 50, 75, 100, 150, 200, 300, 400, 500,
 ].map(step => {
-  const tokens = 10 + step;
+  const tokens = PROMPT_TOKENS + step;
   const paged  = Math.floor(POOL_PAGES / Math.ceil(tokens / PAGE_SIZE));
   return { step, paged, naive: NAIVE_CAP, multiplier: parseFloat((paged / NAIVE_CAP).toFixed(1)) };
 });
 
 // ---------------------------------------------------------------------------
-// Latency comparison  (50 iters, warmup=5, prompt: "The quick brown fox…")
-// Verified: bench latency --iters 50 --warmup 5
+// Latency comparison  (measured: results.latency)
 // ---------------------------------------------------------------------------
 
 export interface LatencyMeasurement {
@@ -93,25 +106,34 @@ export interface LatencyMeasurement {
   color:  string;
 }
 
+const lat = results.latency;
+
 export const latencyData: LatencyMeasurement[] = [
-  { name: "HF DynamicCache", p50: 7.5,  p99: 10.3, color: "#94a3b8" },
-  { name: "PageForge Paged", p50: 10.0, p99: 11.9, color: "#34d399" },
+  { name: "HF DynamicCache", p50: round(lat.dynamic_cache_ms.p50, 2), p99: round(lat.dynamic_cache_ms.p99, 2), color: "#94a3b8" },
+  { name: "PageForge Paged", p50: round(lat.paged_ms.p50, 2),         p99: round(lat.paged_ms.p99, 2),         color: "#34d399" },
 ];
 
+const gpuMsPaged   = round(profile.paged.gpu_ms_per_step, 2);
+const gpuMsDynamic = round(profile.dynamic_cache.gpu_ms_per_step, 2);
+
 export const latencyMeta = {
-  overheadP50Pct:  33,
-  overheadP99Pct:  16,
-  bottleneck: "24 scatter kernel dispatches + 24 torch.cat calls per decode step",
-  nextStep:    "Fused scatter-attention CUDA kernel (eliminates Python dispatch loop)",
+  setup:          lat.setup,
+  overheadP50Pct: Math.round(lat.p50_overhead_pct),
+  overheadP99Pct: Math.round(lat.p99_overhead_pct),
+  bottleneck:
+    `Host-side, not GPU: GPU busy time per step is ${gpuMsPaged} ms paged vs ${gpuMsDynamic} ms for DynamicCache, ` +
+    `while the paged update path spends ${round(profile.paged.cache_update_host_ms, 1)} ms of CPU per step launching ` +
+    `2 gathers and 24 scatters through CuPy.`,
+  nextStep: "Cache CuPy views and fuse the 24 per-layer scatters into one launch, then capture the step in a CUDA Graph",
 };
 
 // ---------------------------------------------------------------------------
 // Pool lifecycle  (8 seqs × 30 steps × 2 consecutive batches, 512-page pool)
-// Verified: bench multi --seqs 8 --steps 30 --batches 2
+// Page arithmetic, as `pageforge bench multi --seqs 8 --steps 30` runs it on the allocator.
 //
 // Batch 1 (steps 0–29): pool fills as sequences grow.
 // Reset (step 30):       free_seq() called for all 8 seqs → pool returns to 0.
-// Batch 2 (steps 31–60): same physical pages reused — identical utilisation curve.
+// Batch 2 (steps 31–60): drawn from the recovered pool (FIFO, so pages 24+), identical utilisation curve.
 // ---------------------------------------------------------------------------
 
 export interface LifecyclePoint {
@@ -144,7 +166,7 @@ export const lifecycleChartData: LifecyclePoint[] = [
   ...Array.from({ length: 30 }, (_, i) => lcPoint(i, i, 1)),
   // free() called — pool resets to 0
   lcPoint(30, 0, 0),
-  // Batch 2: steps 31–60 — same pages, proves pool reuse with zero fragmentation
+  // Batch 2: steps 31–60, drawn from the fully recovered pool
   ...Array.from({ length: 30 }, (_, i) => lcPoint(31 + i, i, 2)),
 ];
 
@@ -158,37 +180,61 @@ export const lifecycleMeta = {
 };
 
 // ---------------------------------------------------------------------------
-// Stress test result  (500 cycles, 16 seqs, 8 pages/seq)
-// Verified: pool stress --cycles 500 --seqs 16 --pages-per-seq 8
+// Allocator stress test  (measured: results.allocator, called from Python)
 // ---------------------------------------------------------------------------
+
+const alloc = results.allocator;
 
 export const stressResult = {
   cycles:         500,
   seqsPerCycle:    16,
   pagesPerSeq:      8,
-  throughputMpps: 1.50,
-  elapsedSec:     0.04,
-  leaks:             0,
+  throughputMpps: round(alloc.pages_per_s / 1e6, 1),
+  elapsedSec:     round((500 * 16 * 8 * 2) / alloc.pages_per_s, 4),
+  leaks:          alloc.leaked_pages,
   oomErrors:         0,
-  passed:         true,
+  passed:         alloc.leaked_pages === 0,
 };
 
 // ---------------------------------------------------------------------------
-// System context
+// System context  (recorded by the benchmark run)
 // ---------------------------------------------------------------------------
 
+const env = results.env;
+
 export const systemSpecs = {
-  gpu:          "NVIDIA RTX 4070 Laptop GPU",
-  vram:         "8.0 GB",
-  cudaNvcc:     "12.6",
-  cudaRuntime:  "12.8",
-  compute:      "sm_89 (Ada Lovelace)",
-  pytorch:      "2.11.0+cu128",
-  cupy:         "14.1.1",
-  transformers: "5.9.0",
-  rust:         "1.90.0",
-  python:       "3.12.7",
-  os:           "Windows 11",
+  gpu:          env.gpu.replace("NVIDIA GeForce ", "NVIDIA "),
+  vram:         `${env.vram_gb} GB`,
+  driver:       env.driver,
+  torchCuda:    env.torch_cuda,
+  compute:      `${env.sm} (Ada Lovelace)`,
+  pytorch:      env.torch,
+  cupy:         env.cupy,
+  transformers: env.transformers,
+  pageforgeRs:  env.pageforge_rs,
+  python:       env.python,
+  measuredAt:   results.measured_at.slice(0, 10),
+};
+
+export const kernelBandwidth = {
+  gatherGBs:  Math.round(results.kernels.gather_gb_s),
+  scatterGBs: Math.round(results.kernels.scatter_layer_gb_s),
+  copyGBs:    Math.round(results.kernels.torch_d2d_copy_gb_s),
+};
+
+export const parity = results.parity;
+export const testCounts = {
+  passed: tests.total_passed,
+  total:  tests.total,
+  python: tests.python.passed,
+  rust:   tests.rust.passed,
+  breakdown: [
+    `Rust allocator (${tests.rust.passed})`,
+    `CUDA kernels (${tests.python.by_file.test_kernels})`,
+    `GPT-2 parity + cache (${tests.python.by_file.test_cache})`,
+    `Allocator via PyO3 (${tests.python.by_file.test_allocator})`,
+    `CLI (${tests.python.by_file.test_cli})`,
+  ].join(" · "),
 };
 
 // ---------------------------------------------------------------------------
@@ -203,28 +249,31 @@ export interface CompRow {
   better:    "paged" | "baseline" | "neutral";
 }
 
-// Memory comparison: PageForge vs Naive Static Pre-alloc
+const mem = results.memory;
+const cap = results.capacity;
+
+// Memory comparison: PageForge vs static pre-allocation (both measured)
 export const memoryCompRows: CompRow[] = [
   {
-    metric:    "VRAM / seq at prompt (t=0)",
-    baseline:  "18.9 MB",
-    pageforge: "0.59 MB",
-    delta:     "32× less",
+    metric:    "KV held by 32 seqs at step 50",
+    baseline:  `${round(mem.static_prealloc_max512_mb)} MB`,
+    pageforge: `${round(mem.paged_pages_in_use_mb)} MB`,
+    delta:     `${round(mem.static_vs_paged_ratio)}× less`,
     better:    "paged",
   },
   {
-    metric:    "VRAM / seq at step 50",
-    baseline:  "18.9 MB",
-    pageforge: "2.36 MB",
-    delta:     "8× less",
+    metric:    `Seqs in one ${Math.round(cap.kv_budget_mb)} MB budget (to 59 tokens)`,
+    baseline:  `${cap.static_sequences}`,
+    pageforge: `${cap.paged_sequences}`,
+    delta:     `${round(cap.ratio)}×`,
     better:    "paged",
   },
   {
-    metric:    "Max concurrent seqs (512-page pool)",
-    baseline:  "16",
-    pageforge: "128–512",
-    delta:     "8–32×",
-    better:    "paged",
+    metric:    "HF DynamicCache, same 32 seqs",
+    baseline:  "-",
+    pageforge: `${round(mem.dynamic_cache_mb)} MB`,
+    delta:     "grows too; no pool bound",
+    better:    "neutral",
   },
   {
     metric:    "Allocation strategy",
@@ -233,70 +282,67 @@ export const memoryCompRows: CompRow[] = [
     delta:     "-",
     better:    "neutral",
   },
-  {
-    metric:    "Memory fragmentation",
-    baseline:  "Zero (fixed-size pre-alloc)",
-    pageforge: "Zero (pool-managed free-list)",
-    delta:     "-",
-    better:    "neutral",
-  },
 ];
 
-// Latency comparison: PageForge vs HF DynamicCache (dynamic torch.cat)
+// Latency comparison: PageForge vs HF DynamicCache (measured)
 export const latencyCompRows: CompRow[] = [
   {
     metric:    "Decode P50 latency",
-    baseline:  "7.5 ms",
-    pageforge: "10.0 ms",
-    delta:     "+33%",
+    baseline:  `${round(lat.dynamic_cache_ms.p50, 2)} ms`,
+    pageforge: `${round(lat.paged_ms.p50, 2)} ms`,
+    delta:     `+${Math.round(lat.p50_overhead_pct)}%`,
     better:    "baseline",
   },
   {
     metric:    "Decode P99 tail latency",
-    baseline:  "10.3 ms",
-    pageforge: "11.9 ms",
-    delta:     "+16%",
+    baseline:  `${round(lat.dynamic_cache_ms.p99, 2)} ms`,
+    pageforge: `${round(lat.paged_ms.p99, 2)} ms`,
+    delta:     `+${Math.round(lat.p99_overhead_pct)}%`,
     better:    "baseline",
   },
   {
-    metric:    "KV tensor layout",
-    baseline:  "Contiguous (torch.cat each step)",
-    pageforge: "Non-contiguous (page-indexed)",
-    delta:     "-",
+    metric:    "GPU busy time per step",
+    baseline:  `${gpuMsDynamic} ms`,
+    pageforge: `${gpuMsPaged} ms`,
+    delta:     "no measurable change",
     better:    "neutral",
   },
   {
-    metric:    "Scatter overhead",
-    baseline:  "None",
-    pageforge: "24 ops/step (bottleneck)",
-    delta:     "+2.5 ms",
+    metric:    "CPU time in cache update per step",
+    baseline:  "-",
+    pageforge: `${round(profile.paged.cache_update_host_ms, 1)} ms`,
+    delta:     "the overhead",
     better:    "baseline",
+  },
+  {
+    metric:    "Logits vs DynamicCache",
+    baseline:  "reference",
+    pageforge: `max diff ${results.parity.max_abs_logit_diff}`,
+    delta:     "bit-exact",
+    better:    "neutral",
   },
 ];
 
 // ---------------------------------------------------------------------------
-// KPI summary cards
+// KPI summary cards (all measured)
 // ---------------------------------------------------------------------------
 
 export const kpis = {
-  concurrencyMultiplier: 16,    // PageForge vs naive at step 10 (10+10=20 tokens → 1 page → 512 seqs, /16 = 32×)
-  latencyOverheadP50:    33,    // % overhead vs HF DynamicCache P50
-  activeVRAMPct:         9.4,   // 14.2 MB active out of 151 MB naive budget (8 seqs)
-  allocThroughputMpps:   1.50,  // M pages/sec from stress test
-  naiveMBPerSeq:         18.9,  // naive pre-alloc per seq (max=512, at step 0)
-  pagedMBPerSeqT0:       0.59,  // paged per seq at prompt (1 page, ~10 tokens)
-  pagedMBPerSeqStep50:   2.36,  // paged per seq at step 50 (4 pages, 60 tokens)
-  seqsPerGbNaive:         53,   // sequences per GB for naive-512 allocation
-  seqsPerGbPaged:        424,   // sequences per GB for paged at step 50
-  totalTests:             75,
-  testsPassing:           75,
+  capacityRatio:       round(cap.ratio),
+  pagedSeqs:           cap.paged_sequences,
+  staticSeqs:          cap.static_sequences,
+  memoryRatio:         round(mem.static_vs_paged_ratio),
+  latencyOverheadP50:  Math.round(lat.p50_overhead_pct),
+  allocThroughputMpps: stressResult.throughputMpps,
+  totalTests:          tests.total,
+  testsPassing:        tests.total_passed,
 };
 
 // Roadmap items — planned optimizations
 export const roadmap = [
   {
-    title:  "Fused scatter-attention kernel",
-    detail: "Combine 24 scatter dispatches + attention into one CUDA kernel. Target: ≤8 ms P50 (−20%).",
+    title:  "Cut host-side dispatch",
+    detail: "Cache CuPy views of the pool and fuse the 24 per-layer scatters into one launch. The profile shows the overhead is CPU launch time, not GPU work.",
     status: "planned",
   },
   {

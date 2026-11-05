@@ -1,0 +1,24 @@
+{
+  "measured_at": "2026-11-04T23:29:40+00:00",
+  "gpu": "NVIDIA GeForce RTX 4070 Laptop GPU",
+  "rust": {
+    "passed": 7,
+    "failed": 0,
+    "exit_code": 0
+  },
+  "python": {
+    "collected": 54,
+    "passed": 54,
+    "failed": 0,
+    "skipped": 0,
+    "by_file": {
+      "test_allocator": 20,
+      "test_cache": 15,
+      "test_cli": 4,
+      "test_kernels": 15
+    },
+    "exit_code": 0
+  },
+  "total_passed": 61,
+  "total": 61
+}

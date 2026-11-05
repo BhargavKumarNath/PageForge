@@ -1,0 +1,67 @@
+{
+  "measured_at": "2026-11-04T22:58:31+00:00",
+  "env": {
+    "gpu": "NVIDIA GeForce RTX 4070 Laptop GPU",
+    "vram_gb": 8.19,
+    "sm": "sm_89",
+    "driver": "595.99.02",
+    "torch": "2.14.0+cu130",
+    "torch_cuda": "13.0",
+    "cupy": "14.2.0",
+    "cupy_cuda_runtime": 12090,
+    "transformers": "5.17.0",
+    "pageforge_rs": "0.2.0",
+    "python": "3.12.14"
+  },
+  "parity": {
+    "prompts": 4,
+    "steps": 50,
+    "max_abs_logit_diff": 0.0
+  },
+  "latency": {
+    "setup": "GPT-2 small fp16, batch 1, prompt 9 tokens, 6 trials x 100 decode steps (10 warmup each), CUDA events, trial order alternated",
+    "samples_per_cache": 600,
+    "dynamic_cache_ms": {
+      "p50": 3.7908480167388916,
+      "p99": 5.873663902282715,
+      "mean": 3.9660129566987354
+    },
+    "paged_ms": {
+      "p50": 7.137279987335205,
+      "p99": 10.305536270141602,
+      "mean": 7.448810398578644
+    },
+    "p50_overhead_pct": 88.27660607388606,
+    "p99_overhead_pct": 75.45328506345935
+  },
+  "memory": {
+    "setup": "32 GPT-2 sequences, prompt 9 tokens + 50 decode steps = 59 tokens each, page_size 16",
+    "paged_pages_in_use_mb": 75.497472,
+    "static_prealloc_max512_mb": 604.176896,
+    "dynamic_cache_mb": 69.600256,
+    "static_vs_paged_ratio": 8.002610948350695,
+    "note": "paged = bytes of pages owned by live sequences; the pool itself is reserved up front. DynamicCache also grows with the sequence, so the saving is against static pre-allocation."
+  },
+  "capacity": {
+    "setup": "one KV budget = a 512-page pool (302.0 MB K+V); every sequence runs to 59 tokens",
+    "kv_budget_mb": 301.989888,
+    "paged_sequences": 128,
+    "static_bytes_per_sequence_mb": 18.881024,
+    "static_sequences": 15,
+    "ratio": 8.533333333333333,
+    "method": "paged: sequences admitted until the allocator raised MemoryError; static: budget divided by the measured bytes of one StaticCache(max_cache_len=512)"
+  },
+  "kernels": {
+    "setup": "2048 tokens, fp16, random page order; gather = all 12 layers x 12 heads x 64, scatter = one layer",
+    "gather_gb_s": 224.768922364947,
+    "scatter_layer_gb_s": 84.14132898345417,
+    "torch_d2d_copy_gb_s": 224.89019006852877,
+    "note": "GB/s counts bytes read + written; the torch device-to-device copy of the same bytes is the measured ceiling on this GPU"
+  },
+  "allocator": {
+    "setup": "500 cycles x 16 sequences x 8 pages, alloc then free, best of 5, called from Python",
+    "calls_per_s": 4366317.681251707,
+    "pages_per_s": 34930541.45001365,
+    "leaked_pages": 0
+  }
+}

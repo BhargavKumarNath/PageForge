@@ -1,0 +1,12 @@
+{
+  "setup": "GPT-2 small fp16, batch 1, 50 profiled decode steps after 10 warm-up",
+  "dynamic_cache": {
+    "gpu_ms_per_step": 1.791873279999954,
+    "kernels_per_step": 236.0
+  },
+  "paged": {
+    "gpu_ms_per_step": 1.7518787000000176,
+    "kernels_per_step": 263.0,
+    "cache_update_host_ms": 3.2990290007728618
+  }
+}

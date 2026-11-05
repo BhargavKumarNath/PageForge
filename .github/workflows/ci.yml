@@ -1,0 +1,73 @@
+name: CI
+
+# GitHub-hosted runners have no GPU. This workflow runs everything that does
+# not need one: Rust tests and lints, the Python allocator and CLI tests
+# against the built extension, ruff, and the dashboard build. The kernel and
+# GPT-2 parity tests are marked `gpu` and show as skipped here; they run
+# locally with `pytest` on a CUDA machine (see README > Tests).
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  rust:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: pageforge-rs
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: pageforge-rs
+      - run: cargo fmt --check
+      - run: cargo clippy --all-targets -- -D warnings
+      - run: cargo clippy --features python -- -D warnings
+      - run: cargo test
+
+  python:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Install dependencies (CPU-only torch)
+        run: |
+          python -m pip install --upgrade pip
+          pip install torch --index-url https://download.pytorch.org/whl/cpu
+          pip install "transformers>=5.0" "cupy-cuda12x>=14.0" typer rich pydantic toml \
+                      pytest pytest-timeout ruff "maturin>=1.5,<2"
+      - name: Build and install the Rust extension
+        run: |
+          maturin build --release -m pageforge-rs/Cargo.toml -o wheels
+          pip install wheels/*.whl
+      - run: ruff check pageforge tests benchmarks
+      - run: ruff format --check pageforge/cache.py pageforge/pool.py pageforge/bridge.py pageforge/kernels tests benchmarks
+      - name: Tests (GPU tests are reported as skipped)
+        run: pytest -rs
+
+  dashboard:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: dashboard
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: dashboard/package-lock.json
+      - run: npm ci
+      - run: npm run build

@@ -89,7 +89,7 @@ export default function LifecycleChart({ data, naiveMB, peakVRAM, peakPct }: Pro
         </div>
         <div className="flex items-center gap-1.5 xs:gap-2 min-w-0">
           <div className="w-8 h-0.5 bg-sky-400 shrink-0" />
-          <span className="text-[10px] xs:text-xs text-zinc-400">Batch 2: same pages reused</span>
+          <span className="text-[10px] xs:text-xs text-zinc-400">Batch 2: recovered pool</span>
         </div>
         <div className="flex items-center gap-1.5 xs:gap-2 min-w-0">
           <div className="w-2 h-2 rounded-full bg-amber-400/60 shrink-0" />
@@ -177,7 +177,7 @@ export default function LifecycleChart({ data, naiveMB, peakVRAM, peakPct }: Pro
       </ResponsiveContainer>
 
       <p className="text-center text-[10px] xs:text-[11px] text-zinc-600 mt-2 xs:mt-3">
-        Batch 2 reuses the exact same physical pages freed by Batch 1. Pool never grows, zero fragmentation.
+        All 512 pages are free again after Batch 1, and Batch 2 needs exactly as many. The FIFO free list hands Batch 2 the next pages in line (24 to 47), not the ones Batch 1 just returned.
       </p>
     </div>
   );

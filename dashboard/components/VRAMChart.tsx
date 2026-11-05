@@ -124,7 +124,7 @@ export default function VRAMChart({ data }: Props) {
             x={50}
             stroke="rgba(255,255,255,0.06)"
             strokeDasharray="3 3"
-            label={{ value: "8× at step 50", position: "top", fill: "#52525b", fontSize: 10 }}
+            label={{ value: "8× at step 50 (measured)", position: "top", fill: "#52525b", fontSize: 10 }}
           />
         </ComposedChart>
       </ResponsiveContainer>

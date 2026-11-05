@@ -12,12 +12,13 @@ import {
   kpis, vramSeries, concurrencySeries, latencyData, latencyMeta,
   lifecycleChartData, lifecycleMeta, stressResult, systemSpecs,
   memoryCompRows, latencyCompRows, roadmap, NAIVE_CAP,
+  kernelBandwidth, parity, testCounts,
 } from "@/lib/data";
 
 // ── Sparkline data (0-100 normalised) ─────────────────────────────────────
 const CONCURRENCY_SPARK = [16, 25, 30, 38, 44, 50, 62, 75, 100, 100].reverse();
 const VRAM_SPARK        = [100, 80, 65, 55, 48, 42, 36, 30, 22, 16];
-const OVERHEAD_SPARK    = [0, 8, 15, 20, 25, 28, 31, 33, 33, 33];
+const OVERHEAD_SPARK    = [0, 10, 20, 30, 40, 50, 60, 70, 80, 88];
 const ALLOC_SPARK       = [40, 55, 68, 80, 88, 93, 97, 99, 100, 100];
 
 // ── Tech badge colour map (static — Tailwind purges dynamic class strings) ─
@@ -45,12 +46,12 @@ const EXPLAINER = [
     border:    "border-rose-400/15",
     bg:        "bg-rose-400/5",
     statColor: "text-rose-400",
-    heading:   "Naive pre-allocation wastes 90%+ of VRAM",
+    heading:   "Static pre-allocation reserves memory nobody uses",
     body:
-      "Traditional KV caches reserve max_seq_len (512) tokens of memory at sequence start, regardless of how many tokens are actually generated. " +
-      "For GPT-2, that's 18.9 MB per sequence, all committed upfront. A 512-page pool can serve just 16 sequences simultaneously.",
-    stat:    "16 seqs max",
-    statSub: "512-page pool · naive pre-alloc",
+      "A static KV cache reserves max_seq_len (512) tokens per sequence at the start, however few tokens it generates. " +
+      "For GPT-2 that measured 18.9 MB per sequence, so a 302 MB budget fits only " + kpis.staticSeqs + " sequences.",
+    stat:    `${kpis.staticSeqs} seqs`,
+    statSub: "302 MB budget · static max_len=512 · measured",
   },
   {
     step:      "02",
@@ -61,8 +62,8 @@ const EXPLAINER = [
     heading:   "On-demand paged allocation",
     body:
       "PageForge allocates memory in fixed-size pages (16 tokens = 0.59 MB) on each decode step. " +
-      "A Rust PageAllocator manages an O(1) VecDeque free-list. Sequences claim pages as they grow and return them immediately when complete, " +
-      "enabling the same pool to serve many more sequences concurrently.",
+      "A Rust allocator keeps a VecDeque free list (O(1) per page) and a block table per sequence. Sequences claim pages as they grow and return them when done, " +
+      "so the same pool serves more sequences at once.",
     stat:    "0.59 MB / page",
     statSub: "16 tokens · allocated on demand",
   },
@@ -72,13 +73,13 @@ const EXPLAINER = [
     border:    "border-emerald-400/15",
     bg:        "bg-emerald-400/5",
     statColor: "text-emerald-400",
-    heading:   "8–32× more concurrent sequences",
+    heading:   `${kpis.capacityRatio}× more sequences in the same memory`,
     body:
-      "At decode step 10 (20 tokens), each sequence uses just 2 pages vs 32 pre-allocated, freeing 94% of the pool for other sequences. " +
-      "The same 512-page budget that handles 16 naive sequences can now serve 128–512 concurrent sequences, " +
-      "depending on how far along each sequence is.",
-    stat:    "128–512 seqs",
-    statSub: "same 512-page pool · 8–32×",
+      "Measured by admitting GPT-2 sequences into a 512-page pool until the allocator ran out: " + kpis.pagedSeqs +
+      " sequences fit at 59 tokens each. The cost is decode latency: +" + kpis.latencyOverheadP50 +
+      "% at P50, almost all of it Python and CuPy launch time on the CPU.",
+    stat:    `${kpis.pagedSeqs} seqs`,
+    statSub: `same 302 MB budget · ${kpis.capacityRatio}× · measured`,
   },
 ];
 
@@ -99,8 +100,9 @@ export default function Page() {
               </h1>
               <p className="text-sm xs:text-base sm:text-lg text-zinc-400 font-light leading-relaxed max-w-xl mb-4 xs:mb-6">
                 A from-scratch implementation of vLLM-style paged KV-cache attention in
-                Rust + CUDA. On-demand page allocation eliminates static VRAM waste,
-                enabling 8–32× more concurrent LLM inference sequences per GPU.
+                Rust and CUDA, plugged into Hugging Face transformers. Pages are allocated on
+                demand, so the same KV memory holds {kpis.capacityRatio}× more GPT-2 sequences than static
+                pre-allocation, with logits bit-identical to the stock cache.
               </p>
               <div className="flex flex-wrap gap-1.5 xs:gap-2">
                 {TECH_BADGES.map(({ label, color }) => (
@@ -117,10 +119,10 @@ export default function Page() {
             {/* Hero stats */}
             <div className="grid grid-cols-2 gap-2 xs:gap-3 w-full md:w-[340px] md:shrink-0">
               {[
-                { val: "8–32×", sub: "more concurrent seqs / GB", color: "text-emerald-400" },
-                { val: "94%",   sub: "less active VRAM per seq",  color: "text-sky-400"     },
-                { val: "+33%",  sub: "P50 latency overhead",      color: "text-amber-400"   },
-                { val: "75/75", sub: "tests passing",             color: "text-violet-400"  },
+                { val: `${kpis.capacityRatio}×`, sub: "more seqs in one KV budget", color: "text-emerald-400" },
+                { val: `${parity.max_abs_logit_diff}`, sub: "max logit diff vs DynamicCache", color: "text-sky-400" },
+                { val: `+${kpis.latencyOverheadP50}%`, sub: "P50 decode latency overhead", color: "text-amber-400" },
+                { val: `${testCounts.passed}/${testCounts.total}`, sub: "tests passing", color: "text-violet-400" },
               ].map(({ val, sub, color }) => (
                 <div key={sub} className="glass-card px-2.5 py-2.5 xs:px-3 xs:py-3 sm:px-4 sm:py-4">
                   <p className={`text-xl xs:text-2xl sm:text-3xl font-light tabular-nums ${color}`}>{val}</p>
@@ -162,19 +164,19 @@ export default function Page() {
         {/* ── KPI Cards ─────────────────────────────────────────────── */}
         <section className="grid grid-cols-2 md:grid-cols-4 gap-2 xs:gap-3 sm:gap-4">
           <MetricCard
-            label="Concurrency Multiplier"
-            value={`${kpis.concurrencyMultiplier}×`}
-            sub="max seqs · 512-page pool · step 10"
-            delta="vs 16 naive"
+            label="Capacity Multiplier"
+            value={`${kpis.capacityRatio}×`}
+            sub={`${kpis.pagedSeqs} vs ${kpis.staticSeqs} seqs · 302 MB budget`}
+            delta="measured"
             deltaType="positive"
             spark={CONCURRENCY_SPARK}
             accentColor="#34d399"
           />
           <MetricCard
-            label="Active VRAM vs Naive"
-            value={`${kpis.activeVRAMPct}%`}
-            sub="14.2 MB active vs 151 MB naive (8 seqs)"
-            delta="−90.6% VRAM"
+            label="KV Memory vs Static"
+            value={`${kpis.memoryRatio}× less`}
+            sub="32 seqs at step 50 · measured"
+            delta={`${memoryCompRows[0].pageforge} vs ${memoryCompRows[0].baseline}`}
             deltaType="positive"
             spark={VRAM_SPARK}
             accentColor="#38bdf8"
@@ -182,8 +184,8 @@ export default function Page() {
           <MetricCard
             label="P50 Latency Overhead"
             value={`+${kpis.latencyOverheadP50}%`}
-            sub="7.5 ms → 10.0 ms vs HF DynamicCache"
-            delta="scatter cost"
+            sub={`${latencyData[0].p50} ms → ${latencyData[1].p50} ms vs HF DynamicCache`}
+            delta="host dispatch"
             deltaType="neutral"
             spark={OVERHEAD_SPARK}
             accentColor="#fbbf24"
@@ -191,8 +193,8 @@ export default function Page() {
           <MetricCard
             label="Allocator Throughput"
             value={`${kpis.allocThroughputMpps}M/s`}
-            sub="pages/sec · 500 cycles · 0 leaks"
-            delta="PASS"
+            sub="pages/sec via Python · 500 cycles · 0 leaks"
+            delta={stressResult.passed ? "PASS" : "FAIL"}
             deltaType="positive"
             spark={ALLOC_SPARK}
             accentColor="#a78bfa"
@@ -206,15 +208,15 @@ export default function Page() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 xs:gap-6 sm:gap-8">
             <ComparisonTable
               title="Memory Efficiency"
-              baseLabel="Naive Static"
+              baseLabel="Static max_len=512"
               rows={memoryCompRows}
-              note="Naive baseline pre-allocates max_seq_len=512 tokens per sequence at start, regardless of actual generation length."
+              note="Baseline: transformers StaticCache(max_cache_len=512), bytes measured with torch.cuda.memory_allocated. HF's default DynamicCache also grows with the sequence; PageForge's gain over it is a bounded, reusable pool, not fewer bytes."
             />
             <ComparisonTable
               title="Decode Latency"
               baseLabel="HF DynamicCache"
               rows={latencyCompRows}
-              note="HF DynamicCache grows KV tensors by torch.cat each step (contiguous layout). PageForge scatter-copies into non-contiguous pages, adding overhead per step."
+              note={latencyMeta.setup}
             />
           </div>
         </section>
@@ -226,11 +228,11 @@ export default function Page() {
               <p className="label-tag mb-1">Memory Efficiency</p>
               <h2 className="section-title">VRAM Consumption vs Decode Step</h2>
               <p className="section-sub text-[10px] xs:text-xs mt-1">
-                32 concurrent sequences · GPT-2 124M · fp16 · Naive budget = 512 tokens / sequence (fixed)
+                32 concurrent sequences · GPT-2 124M · fp16 · page arithmetic; step 50 checked against the measured run
               </p>
             </div>
             <div className="text-right shrink-0">
-              <p className="text-2xl xs:text-3xl font-light text-emerald-400">8.0×</p>
+              <p className="text-2xl xs:text-3xl font-light text-emerald-400">{kpis.memoryRatio}×</p>
               <p className="text-[10px] xs:text-xs text-zinc-500">savings at step 50</p>
             </div>
           </div>
@@ -243,7 +245,7 @@ export default function Page() {
             <p className="label-tag mb-1">Concurrency</p>
             <h2 className="section-title mb-0.5">Max Concurrent Sequences</h2>
             <p className="section-sub text-[10px] xs:text-xs mb-3 xs:mb-5">
-              512-page pool · page_size=16 · prompt ≈ 10 tokens · shows PageForge advantage degrades as seqs grow
+              512-page pool · page_size=16 · 9-token prompt · page arithmetic · the advantage shrinks as sequences grow
             </p>
             <ConcurrencyChart data={concurrencySeries} naiveCap={NAIVE_CAP} />
           </section>
@@ -252,7 +254,7 @@ export default function Page() {
             <p className="label-tag mb-1">Latency Analysis</p>
             <h2 className="section-title mb-0.5">Decode Step Latency</h2>
             <p className="section-sub text-[10px] xs:text-xs mb-3 xs:mb-5">
-              50 iterations · 5 warmup · RTX 4070 Laptop · prompt: "The quick brown fox…"
+              {latencyMeta.setup}
             </p>
             <LatencyChart
               data={latencyData}
@@ -270,12 +272,12 @@ export default function Page() {
               <p className="label-tag mb-1">Pool Lifecycle</p>
               <h2 className="section-title">Sequential Batch Reuse</h2>
               <p className="section-sub text-[10px] xs:text-xs mt-1">
-                8 concurrent seqs · 30 decode steps · free() at step 30 · Batch 2 reuses exact same pages
+                8 concurrent seqs · 30 decode steps · free() at step 30 · page arithmetic, as `pageforge bench multi` runs it
               </p>
             </div>
             <div className="flex items-center gap-1 xs:gap-1.5 text-[10px] xs:text-xs text-emerald-400 shrink-0">
               <CheckCircle className="w-3 xs:w-4 h-3 xs:h-4 shrink-0" />
-              <span className="font-medium">Zero fragmentation verified</span>
+              <span className="font-medium">Zero leaks (allocator invariants tested)</span>
             </div>
           </div>
           <LifecycleChart
@@ -288,7 +290,7 @@ export default function Page() {
 
         {/* ── Architecture + System Specs ───────────────────────────── */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 xs:gap-4">
-          <ArchitectureCard />
+          <ArchitectureCard gatherGBs={kernelBandwidth.gatherGBs} scatterGBs={kernelBandwidth.scatterGBs} copyGBs={kernelBandwidth.copyGBs} />
           <SystemSpecs specs={systemSpecs} stress={stressResult} />
         </div>
 
@@ -330,9 +332,9 @@ export default function Page() {
           <div className="flex flex-wrap justify-center sm:justify-start items-center gap-x-2 xs:gap-x-3 gap-y-1 text-[10px] xs:text-xs">
             <span className="text-zinc-600">PageForge v0.1.0</span>
             <span className="text-zinc-800 hidden sm:inline">·</span>
-            <span className="text-zinc-600 hidden xs:inline">RTX 4070 Laptop · sm_89 · CUDA 12.8</span>
+            <span className="text-zinc-600 hidden xs:inline">{systemSpecs.gpu.replace("NVIDIA ", "")} · sm_89 · torch CUDA {systemSpecs.torchCuda}</span>
             <span className="text-zinc-800 hidden sm:inline">·</span>
-            <span className="text-zinc-600 hidden sm:inline">Hardware-verified benchmarks · GPT-2 124M fp16</span>
+            <span className="text-zinc-600 hidden sm:inline">Measured {systemSpecs.measuredAt} · GPT-2 124M fp16</span>
           </div>
           <a
             href="https://github.com/BhargavKumarNath/PageForge"

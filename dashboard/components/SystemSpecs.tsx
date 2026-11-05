@@ -1,4 +1,5 @@
 import { CheckCircle } from "lucide-react";
+import { testCounts } from "@/lib/data";
 
 interface StressResult {
   cycles: number; seqsPerCycle: number; pagesPerSeq: number;
@@ -7,9 +8,9 @@ interface StressResult {
 }
 
 interface Specs {
-  gpu: string; vram: string; cudaNvcc: string; cudaRuntime: string;
+  gpu: string; vram: string; driver: string; torchCuda: string;
   compute: string; pytorch: string; cupy: string; transformers: string;
-  rust: string; python: string; os: string;
+  pageforgeRs: string; python: string; measuredAt: string;
 }
 
 interface Props { specs: Specs; stress: StressResult }
@@ -26,13 +27,14 @@ const SPEC_GROUPS = [
   {
     heading: "Software",
     items: (s: Specs) => [
-      ["CUDA nvcc",     s.cudaNvcc],
-      ["CUDA runtime",  s.cudaRuntime],
+      ["Driver",        s.driver],
+      ["torch CUDA",    s.torchCuda],
       ["PyTorch",       s.pytorch],
       ["CuPy",          s.cupy],
       ["transformers",  s.transformers],
-      ["Rust",          s.rust],
+      ["pageforge-rs",  s.pageforgeRs],
       ["Python",        s.python],
+      ["Measured",      s.measuredAt],
     ],
   },
 ] as const;
@@ -70,7 +72,7 @@ export default function SystemSpecs({ specs, stress }: Props) {
           <p className="text-[9px] xs:text-[10px] uppercase tracking-widest text-zinc-600">Allocator Stress Test</p>
           <div className="flex items-center gap-1 xs:gap-1.5 text-[10px] xs:text-xs text-emerald-400 shrink-0">
             <CheckCircle className="w-3 xs:w-3.5 h-3 xs:h-3.5 shrink-0" />
-            <span className="font-medium">PASS</span>
+            <span className="font-medium">{stress.passed ? "PASS" : "FAIL"}</span>
           </div>
         </div>
         <div className="grid grid-cols-2 xs:grid-cols-3 gap-1.5 xs:gap-2">
@@ -104,9 +106,9 @@ export default function SystemSpecs({ specs, stress }: Props) {
       {/* Test suite badge */}
       <div className="flex items-center justify-between gap-2 xs:gap-3 px-2.5 xs:px-4 py-2 xs:py-3 rounded-xl bg-emerald-400/5 border border-emerald-400/15">
         <div className="min-w-0">
-          <p className="text-[10px] xs:text-xs font-semibold text-emerald-400">75 / 75 tests passing</p>
+          <p className="text-[10px] xs:text-xs font-semibold text-emerald-400">{testCounts.passed} / {testCounts.total} tests passing</p>
           <p className="text-[9px] xs:text-[11px] text-zinc-500 mt-0.5 leading-snug">
-            Rust unit (6) · CUDA kernels (10) · GPT-2 integration (7) · VRAM + latency (32) · Multi-seq (19)
+            {testCounts.breakdown}
           </p>
         </div>
         <CheckCircle className="w-4 xs:w-5 h-4 xs:h-5 text-emerald-400 shrink-0" />
