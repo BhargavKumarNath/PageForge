@@ -21,7 +21,7 @@ from __future__ import annotations
 import torch
 from transformers.cache_utils import Cache, DynamicCache, DynamicLayer
 
-from pageforge.kernels import gather_kv, scatter_kv_layer
+from pageforge.kernels import gather_kv, scatter_kv_layer, scatter_kv_layers_fused
 from pageforge.pool import PagedPool
 
 
@@ -79,6 +79,7 @@ class PagedKVCache(DynamicCache):
         n_pages: int | None = None,
         page_size: int = 16,
         config=None,
+        fused_scatter: bool = False,
     ) -> None:
         if pool is None:
             if n_pages is None or config is None:
@@ -90,6 +91,9 @@ class PagedKVCache(DynamicCache):
         self._past_k: torch.Tensor | None = None  # (len, n_cols, head_dim), valid for the current step
         self._past_v: torch.Tensor | None = None
         self._step_pages: torch.Tensor | None = None
+        # fused_scatter=True defers the per-layer scatters and issues one launch after the last layer.
+        self.fused_scatter = fused_scatter
+        self._pending: list[tuple[torch.Tensor, torch.Tensor]] = []
         layers = [PagedLayer(self, i) for i in range(pool.geometry.n_layers)]
         Cache.__init__(self, layers=layers)
 
@@ -122,12 +126,17 @@ class PagedKVCache(DynamicCache):
                 self._past_k = self._past_v = None
         assert self._step_pages is not None
 
-        # (1, H, T, D) -> (T, H, D), the pool's row layout for one layer.
-        new_k = key_states[0].transpose(0, 1).contiguous()
-        new_v = value_states[0].transpose(0, 1).contiguous()
         head_offset = layer_idx * g.n_heads
-        scatter_kv_layer(new_k, self._step_pages, self.pool.pool_k, past_len, head_offset)
-        scatter_kv_layer(new_v, self._step_pages, self.pool.pool_v, past_len, head_offset)
+        if self.fused_scatter:
+            self._pending.append((key_states, value_states))
+            if layer_idx == g.n_layers - 1:
+                self._flush_pending(past_len)
+        else:
+            # (1, H, T, D) -> (T, H, D), the pool's row layout for one layer.
+            new_k = key_states[0].transpose(0, 1).contiguous()
+            new_v = value_states[0].transpose(0, 1).contiguous()
+            scatter_kv_layer(new_k, self._step_pages, self.pool.pool_k, past_len, head_offset)
+            scatter_kv_layer(new_v, self._step_pages, self.pool.pool_v, past_len, head_offset)
 
         if past_len == 0:
             return key_states, value_states
@@ -144,6 +153,21 @@ class PagedKVCache(DynamicCache):
             self._past_k = self._past_v = None  # release the per-step scratch
         return keys, values
 
+    def _flush_pending(self, past_len: int) -> None:
+        """Scatter all layers' new tokens at once; fall back to per-layer scatters if the fused kernel declines."""
+        g = self.pool.geometry
+        pending, self._pending = self._pending, []
+        keys = [k for k, _ in pending]
+        values = [v for _, v in pending]
+        assert self._step_pages is not None
+        if len(pending) == g.n_layers and scatter_kv_layers_fused(
+            keys, values, self._step_pages, self.pool.pool_k, self.pool.pool_v, past_len
+        ):
+            return
+        for layer_idx, (k, v) in enumerate(pending):
+            scatter_kv_layer(k[0].transpose(0, 1).contiguous(), self._step_pages, self.pool.pool_k, past_len, layer_idx * g.n_heads)
+            scatter_kv_layer(v[0].transpose(0, 1).contiguous(), self._step_pages, self.pool.pool_v, past_len, layer_idx * g.n_heads)
+
     # -- lifecycle ------------------------------------------------------------
 
     def free(self) -> list[int]:
@@ -152,6 +176,7 @@ class PagedKVCache(DynamicCache):
             return []
         self._freed = True
         self._past_k = self._past_v = self._step_pages = None
+        self._pending = []
         try:
             return self.pool.free_seq(self.seq_id)
         except KeyError:  # never allocated (no forward pass ran)

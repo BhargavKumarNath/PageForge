@@ -14,9 +14,19 @@ Measured on an RTX 4070 Laptop GPU with GPT-2 small (fp16):
 | Capacity | **128 vs 15** sequences fit in one 302 MB KV budget, against static 512-token pre-allocation (**8.5×**) |
 | Memory | 32 sequences at decode step 50 hold **75.5 MB** of pages vs **604.2 MB** pre-allocated (**8.0×**) |
 | Cost | Decode step **+88% at P50** (3.79 → 7.14 ms), almost all of it host-side launch overhead (see [Latency](#latency)) |
-| Tests | **61 passing**: 54 Python + 7 Rust |
+| Tests | **98 passing**: 91 Python + 7 Rust |
 
 ---
+
+## Phase 4: sweeps, fused scatter, a second model, vLLM
+
+Protocol written first: [`benchmarks/PHASE4_PROTOCOL.md`](benchmarks/PHASE4_PROTOCOL.md). Script: `benchmarks/phase4.py`; numbers: `benchmarks/results/phase4.json` and `vllm_gpt2.json`.
+
+**Page size** (302 MB budget, GPT-2 geometry, 20 random arrival orders, lengths 16 to 512): sequences admitted 29.1 / 28.8 / 28.0 / 26.9 for page size 8 / 16 / 32 / 64 (sd about 2.6), i.e. 1.82x to 1.68x the static 512-token layout; internal waste 1.2% / 2.6% / 5.2% / 10.0%; gather 226 / 221 / 197 / 197 GB/s. Decode latency is the same at every page size (paged overhead +86% to +87%). Pool size from 128 to 2048 pages gives 1.68x to 1.83x static at every size. The earlier "128 vs 15 sequences" figure is a best case; with mixed lengths the gain is about 1.8x.
+
+**Fused scatter** (one kernel launch for all layers per decode step, pointers passed by value): GPT-2 paged decode p50 6.37 ms to 4.11 ms against 3.41 ms for HF DynamicCache, overhead +87% to +21%, a 76% smaller gap (trial range 0.62 to 0.75 ms). TinyLlama 1.1B (22 layers, 4 KV heads, GQA): 10.69 ms dynamic, 14.68 ms paged, 13.70 ms fused (+37% to +28%). Logits are bit-identical to DynamicCache for both models (max abs difference 0.0, 4 prompts x 50 steps). 37 new tests cover the fused path.
+
+**vLLM** (v-installed in an isolated env, GPT-2 fp16, batch 1, CUDA graphs on, `gpu_memory_utilization=0.5`, 12 trials of (101 tokens minus 1 token)/100): 1.35 ms per token (range 1.34 to 1.56). That is 2.5x faster than HF DynamicCache here and 3x faster than fused PageForge. It is not an equal comparison: vLLM captures the decode step in a CUDA graph and uses its own attention kernels, while PageForge runs eagerly through HF. It marks the floor for this GPU and model, not a like-for-like result.
 
 ## Project history
 
@@ -117,7 +127,7 @@ GB/s counts bytes read plus written.
 
 ## Tests
 
-**61 tests, all passing on the GPU** ([`benchmarks/results/tests.json`](benchmarks/results/tests.json), written by `python benchmarks/record_tests.py`):
+**98 tests, all passing on the GPU** ([`benchmarks/results/tests.json`](benchmarks/results/tests.json), written by `python benchmarks/record_tests.py`):
 
 | Suite | Tests | What it checks |
 |---|---|---|
